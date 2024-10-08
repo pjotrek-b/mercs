@@ -1,5 +1,9 @@
 # mercs
+
 A simple GUI to view &amp; edit xattrs (extended file attributes) in Python+Qt, using `xattr` (v0.9.6) library.
+
+![MERCS GUI showing a 0-Byte xattrs-only file on ext4 (Xubuntu Linux)](res/mercs-xattr_0byte.png)
+
 
 # What does "MERCS" stand for?
 
@@ -33,3 +37,15 @@ Have fun! 🍰
 
 Currently, mercs will close itself immediately if a file has *no attributes* yet set.
 So you need to use `setfattr` to give it an initial value - and then use mercs to add more.
+
+
+# Screenshots
+
+## A 0-Byte file containing only metadata, shown in 2 different tools:
+![A 0-Byte file containing only metadata, shown in 2 different tools.](res/0byte-db_entry.png)
+
+## Recoll (search tool) showing that MERCS really looks at the same filesystem data (xattrs)
+![Recoll (search tool) showing that MERCS really looks at the same filesystem data (xattrs)](res/recoll-xattr_exif_copy.png)
+
+## MERCS as right-click custom config in file-manager (Thunar XFCE4)
+![MERCS as right-click custom config in Thunar (XFCE4)](res/pyQtThunar-rightclickedit-metadata.png)
