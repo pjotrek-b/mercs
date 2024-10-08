@@ -6,6 +6,7 @@ A simple GUI to view &amp; edit xattrs (extended file attributes) in Python+Qt, 
 > "Metadata Edit? Right-click: Save."
 
 It's part of a metadata/annotation environment, where one can literally access *any* data (metadata+payload) as easy as "right-click-edit-save" 😄
+Working title: [AHAlodeck by August](https://github.com/ArkThis/AHAlodeck)
 
 
 # What are xattrs?
@@ -26,3 +27,9 @@ The plan is to extend MERCS functionalities as follows:
   * Support graph-queries (RDF?)
 
 Have fun! 🍰
+
+
+# Known Issues
+
+Currently, mercs will close itself immediately if a file has *no attributes* yet set.
+So you need to use `setfattr` to give it an initial value - and then use mercs to add more.
