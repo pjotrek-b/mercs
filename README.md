@@ -27,3 +27,9 @@ The plan is to extend MERCS functionalities as follows:
   * Support graph-queries (RDF?)
 
 Have fun! 🍰
+
+
+# Known Issues
+
+Currently, mercs will close itself immediately if a file has *no attributes* yet set.
+So you need to use `setfattr` to give it an initial value - and then use mercs to add more.
