@@ -150,7 +150,7 @@ class Ui(QtWidgets.QMainWindow):
             value = table.item(row, 1).text()
             metadata.append((key, value))
 
-        return UnicodeToBin(metadata)
+        return aha.UnicodeToBin(metadata)
 
 
 

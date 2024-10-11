@@ -111,7 +111,10 @@ class AHAlodeck():
 
             # Actually write the xattr pair:
             # set() expects value to be a byte sequence (not string).
-            xattrs.set(key, value.encode(self.encoding))
+            if not isinstance(value, bytes):
+                    value = value.encode(self.encoding)
+
+            xattrs.set(key, value)
             count += 1
 
         print("done saving {} attributes.".format(count))
