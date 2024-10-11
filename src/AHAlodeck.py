@@ -55,6 +55,20 @@ class AHAlodeck():
         return text
 
     ##
+    # The opposite of BinToUnicde().
+    #
+    def UnicodeToBin(self, metadata):
+        byte = []
+        for key, value in metadata:
+            keyvalue = [
+                    key,
+                    value.encode(self.encoding)
+                    ]
+            byte.append(keyvalue)
+
+        return byte
+
+    ##
     # Read xattr (POSIX eXtended ATTRibutes) key/value metadata about "a file" from
     # the filesystem.
     #

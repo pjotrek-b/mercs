@@ -142,13 +142,15 @@ class Ui(QtWidgets.QMainWindow):
 
     def getMetadataFromTable(self):
         table = self.table
+        aha = self.aha
+
         metadata : list = []
         for row in range(0, table.rowCount()):
             key = table.item(row, 0).text()
             value = table.item(row, 1).text()
             metadata.append((key, value))
 
-        return metadata
+        return UnicodeToBin(metadata)
 
 
 
