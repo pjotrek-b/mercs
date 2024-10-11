@@ -88,7 +88,7 @@ class AHAlodeck():
         #TODO: Write all changes atomically? meaning: delete everything
         #first, then write again from 'metadata' variable?
         print("Removing all existing attributes first...")
-        #xattrs.clear()
+        xattrs.clear()
 
         print("Storing metadata with '{}':".format(filename))
         count = 0
