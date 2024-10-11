@@ -25,6 +25,12 @@ class Ui(QtWidgets.QMainWindow):
         aha.initParameters()
         self.aha = aha                      # finally
 
+        # Default length/width for entries if no xattrs exist, yet:
+        maxWord = {}
+        maxWord['key'] = "Empty"
+        maxWord['value'] = "Empty"
+        self.maxWord = maxWord
+
         table = self.initTable(self.tableWidget)
         self.initTableData(table, aha.getMetadataText())
         self.initButtons()
@@ -43,6 +49,12 @@ class Ui(QtWidgets.QMainWindow):
         aha = self.aha
 
         kv_list = aha.get_kv_list(aha.getMetadataText())
+
+        # Abort safely if attribute list is empty:
+        if not kv_list:
+            print("no attributes set yet.");
+            return None
+
         #pprint(kv_list) # DEBUG DELME
 
         maxWord = {}
@@ -59,7 +71,7 @@ class Ui(QtWidgets.QMainWindow):
         table.setRowCount(len(self.aha.getMetadata()))
 
         table.setHorizontalHeaderLabels(['Key', 'Value', 'Description'])
-        table.setColumnWidth(0, len(self.maxWord['key']) * 7)       # "8" used as random char-width (in px)
+        table.setColumnWidth(0, len(self.maxWord['key']) * 7)       # "7" used as random char-width (in px)
         table.setColumnWidth(1, len(self.maxWord['value']) * 7)
         return table
 

@@ -71,7 +71,11 @@ class AHAlodeck():
     def get_kv_list(self, metadata):
         #pprint(metadata) # DEBUG DELME
         kv_list = list(zip(*metadata))  # 😘️ to Python! this is beautiful.
-        #pprint(kv_list) # DEBUG DELME
+        pprint(kv_list) # DEBUG DELME
+
+        if not (kv_list):
+            return None
+
         return kv_list
 
     def setMetadata(self, metadata):
