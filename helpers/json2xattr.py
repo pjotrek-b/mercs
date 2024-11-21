@@ -110,7 +110,7 @@ def main():
     handle_args(args)
 
     #print("parsed args.")
- 
+
     # Use prefix from args (or default):
     prefix = args.prefix
 
@@ -128,8 +128,12 @@ def main():
 
     #print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
-    write_xattrs_dict(target, json_data[0], prefix=prefix)
-    print("wrote xattrs to: {}".format(target))
+    metadata = json_data[0]
+    write_xattrs_dict(target, metadata, prefix=prefix)
+    print("wrote {} xattrs to: {}".format(
+        convert_bytes(sys.getsizeof(metadata)),
+        target)
+        )
 
     #print("\nReading xattrs from target:")
     xattrs = read_xattrs(target)
