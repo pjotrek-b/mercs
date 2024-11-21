@@ -11,6 +11,8 @@ import json
 import sys
 import os
 
+# --- handling JSON data:
+
 def read_json_file(filename):
     with open(filename, 'r') as f:
         data = json.load(f)
@@ -24,6 +26,12 @@ def read_json_stdin():
     else:
         data = json.load(sys.stdin)
     return data
+
+def show_json(json):
+    for key, value in json[0].items():
+        print("{} = {}".format(key, value))
+
+# --- handling extended attributes:
 
 def write_xattrs_list(target, data, prefix='user.'):
     for key, value in data.items():
@@ -47,14 +55,27 @@ def read_xattrs(target):
     xattrs = os.listxattr(target)
     return xattrs
 
-def show_json(json):
-    for key, value in json[0].items():
-        print("{} = {}".format(key, value))
+def parse_args():
+    parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
+    parser.add_argument('-t', '--target',
+            type=str,
+            required=True,
+            help='A filename to write xattrs to.'
+            )
+    parser.add_argument('-j', '--json',
+            type=str,
+            required=True,
+            default='-',
+            help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
+            )
+    return parser
+
+
+# --- Main function:
 
 def main():
-    parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
-    parser.add_argument('-t', '--target', type=str, required=True, help='A filename to write xattrs to.')
-    parser.add_argument('-j', '--json', type=str, default='-', help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.')
+    # Get commandline arguments/options:
+    parser = parse_args()
     args = parser.parse_args()
 
     print("parsed args.")
