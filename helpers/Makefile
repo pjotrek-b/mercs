@@ -20,3 +20,7 @@ tag_source:
 # Use after "make thinkcopy".
 tag_copy:
 	find $(SOURCE)/ -type f -exec sh -c './brainswap.sh "$(SOURCE)" "$(TARGET)" "{}"' \;
+
+
+install:
+	cp -av json2xattr.py /usr/local/bin/json2xattr
