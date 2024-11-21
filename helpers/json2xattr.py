@@ -11,6 +11,44 @@ import json
 import sys
 import os
 
+
+# --- Commandline parameters:
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
+    parser.add_argument('-t', '--target',
+            type=str,
+            required=True,
+            help='A filename to write xattrs to.'
+            )
+    parser.add_argument('-j', '--json',
+            type=str,
+            required=True,
+            default='-',
+            help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
+            )
+    parser.add_argument('-p', '--prefix',
+            type=str,
+            default='user.',
+            help='Attribute namespace prefix: defaults to "user." (POSIX)'
+            )
+    return parser
+
+def handle_args(args):
+    # TODO: args.json: check if file exists.
+    #print("Default prefix: '{}'".format(args.prefix)) # verbose
+    pass
+
+# This function will convert bytes to MB.... GB... etc
+# use "step_unit=1024.0" for KiB, etc.
+# use "step_unit=1000.0" for kilo (=1000), etc.
+def convert_bytes(num, step_unit=1024.0):
+    for x in ['bytes', 'kB', 'MB', 'GB', 'TB']:
+        if num < step_unit:
+            return "%3.1f %s" % (num, x)
+        num /= step_unit
+
+
 # --- handling JSON data:
 
 def read_json_file(filename):
@@ -59,42 +97,6 @@ def clear_xattrs(target):
     xattrs = os.listxattr(target)
     for key in xattrs:
         os.removexattr(target, key)
-
-# --- Commandline parameters:
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
-    parser.add_argument('-t', '--target',
-            type=str,
-            required=True,
-            help='A filename to write xattrs to.'
-            )
-    parser.add_argument('-j', '--json',
-            type=str,
-            required=True,
-            default='-',
-            help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
-            )
-    parser.add_argument('-p', '--prefix',
-            type=str,
-            default='user.',
-            help='Attribute namespace prefix: defaults to "user." (POSIX)'
-            )
-    return parser
-
-def handle_args(args):
-    # TODO: args.json: check if file exists.
-    #print("Default prefix: '{}'".format(args.prefix)) # verbose
-    pass
-
-# This function will convert bytes to MB.... GB... etc
-# use "step_unit=1024.0" for KiB, etc.
-# use "step_unit=1000.0" for kilo (=1000), etc.
-def convert_bytes(num, step_unit=1024.0):
-    for x in ['bytes', 'kB', 'MB', 'GB', 'TB']:
-        if num < step_unit:
-            return "%3.1f %s" % (num, x)
-        num /= step_unit
 
 
 def show_xattr_limits():
