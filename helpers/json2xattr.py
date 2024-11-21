@@ -33,11 +33,11 @@ def show_json(json):
 
 # --- handling extended attributes:
 
-def write_xattrs_list(target, data, prefix='user.'):
+def write_xattrs_list(target, data, prefix=None):
     for key, value in data.items():
         os.setxattr(target, prefix + key, value.encode())
 
-def write_xattrs_dict(target, data, prefix='user.'):
+def write_xattrs_dict(target, data, prefix=None):
     if isinstance(data, dict):
         for key, value in data.items():
             strvar = str(value)
@@ -60,6 +60,7 @@ def clear_xattrs(target):
     for key in xattrs:
         os.removexattr(target, key)
 
+# --- Commandline parameters:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
@@ -74,7 +75,17 @@ def parse_args():
             default='-',
             help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
             )
+    parser.add_argument('-p', '--prefix',
+            type=str,
+            default='user.',
+            help='Attribute namespace prefix: defaults to "user." (POSIX)'
+            )
     return parser
+
+def handle_args(args):
+    # TODO: args.json: check if file exists.
+
+    print("Default prefix: '{}'".format(args.prefix))
 
 # This function will convert bytes to MB.... GB... etc
 # use "step_unit=1024.0" for KiB, etc.
@@ -96,8 +107,12 @@ def main():
     # Get commandline arguments/options:
     parser = parse_args()
     args = parser.parse_args()
+    handle_args(args)
 
     print("parsed args.")
+ 
+    # Use prefix from args (or default):
+    prefix = args.prefix
 
     if args.json == '-':
         json_data = read_json_stdin()
@@ -113,7 +128,7 @@ def main():
 
     print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
-    write_xattrs_dict(target, json_data[0])
+    write_xattrs_dict(target, json_data[0], prefix=prefix)
     print("wrote xattrs to: {}".format(target))
 
     print("\nReading xattrs from target:")
