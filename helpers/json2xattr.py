@@ -124,7 +124,7 @@ def main():
 
 
     target = args.target
-    show_xattr_limits()
+    #show_xattr_limits()    # nice, but verbose
 
     print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
@@ -133,7 +133,7 @@ def main():
 
     print("\nReading xattrs from target:")
     xattrs = read_xattrs(target)
-    print(xattrs)
+    #print(xattrs)  # pretty verbose. But nice to see what's happening.
 
 if __name__ == '__main__':
     main()
