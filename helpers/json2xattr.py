@@ -55,6 +55,12 @@ def read_xattrs(target):
     xattrs = os.listxattr(target)
     return xattrs
 
+def clear_xattrs(target):
+    xattrs = os.listxattr(target)
+    for key in xattrs:
+        os.removexattr(target, key)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
     parser.add_argument('-t', '--target',
@@ -69,6 +75,19 @@ def parse_args():
             help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
             )
     return parser
+
+# This function will convert bytes to MB.... GB... etc
+# use "step_unit=1024.0" for KiB, etc.
+# use "step_unit=1000.0" for kilo (=1000), etc.
+def convert_bytes(num, step_unit=1024.0):
+    for x in ['bytes', 'kB', 'MB', 'GB', 'TB']:
+        if num < step_unit:
+            return "%3.1f %s" % (num, x)
+        num /= step_unit
+
+
+def show_xattr_limits():
+    print("Max. size of an extended attribute: {}".format(convert_bytes(os.XATTR_SIZE_MAX)))
 
 
 # --- Main function:
@@ -90,6 +109,10 @@ def main():
 
 
     target = args.target
+    show_xattr_limits()
+
+    print("Removing existing xattrs from {}...".format(target))
+    clear_xattrs(target)
     write_xattrs_dict(target, json_data[0])
     print("wrote xattrs to: {}".format(target))
 
