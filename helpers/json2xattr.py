@@ -84,8 +84,8 @@ def parse_args():
 
 def handle_args(args):
     # TODO: args.json: check if file exists.
-
-    print("Default prefix: '{}'".format(args.prefix))
+    #print("Default prefix: '{}'".format(args.prefix)) # verbose
+    pass
 
 # This function will convert bytes to MB.... GB... etc
 # use "step_unit=1024.0" for KiB, etc.
@@ -109,7 +109,7 @@ def main():
     args = parser.parse_args()
     handle_args(args)
 
-    print("parsed args.")
+    #print("parsed args.")
  
     # Use prefix from args (or default):
     prefix = args.prefix
@@ -119,19 +119,19 @@ def main():
     else:
         json_data = read_json_file(args.json)
 
-    print("read json.\n")
+    #print("read json.\n")
     #show_json(json_data)
 
 
     target = args.target
     #show_xattr_limits()    # nice, but verbose
 
-    print("Removing existing xattrs from {}...".format(target))
+    #print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
     write_xattrs_dict(target, json_data[0], prefix=prefix)
     print("wrote xattrs to: {}".format(target))
 
-    print("\nReading xattrs from target:")
+    #print("\nReading xattrs from target:")
     xattrs = read_xattrs(target)
     #print(xattrs)  # pretty verbose. But nice to see what's happening.
 
