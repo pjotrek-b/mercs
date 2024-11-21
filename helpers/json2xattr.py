@@ -32,6 +32,11 @@ def parse_args():
             default='user.',
             help='Attribute namespace prefix: defaults to "user." (POSIX)'
             )
+    parser.add_argument('-a', '--archive',
+            type=bool,
+            default=False,
+            help='Preserve source as best as possible. Disables value.strip().'
+            )
     return parser
 
 def handle_args(args):
@@ -71,14 +76,25 @@ def show_json(json):
 
 # --- handling extended attributes:
 
-def write_xattrs_list(target, data, prefix=None):
+def write_xattrs_list(target, data, prefix=None, archive=True):
     for key, value in data.items():
-        os.setxattr(target, prefix + key, value.encode())
+        if archive:
+            # questionable, but I have type-doubts:
+            strvar = str(value)
+        else:
+            # Remove whitespace:
+            strvar = str(value).strip()
+        os.setxattr(target, prefix + key, strvar.encode())
 
-def write_xattrs_dict(target, data, prefix=None):
+def write_xattrs_dict(target, data, prefix=None, archive=True):
     if isinstance(data, dict):
         for key, value in data.items():
-            strvar = str(value)
+            if archive:
+                # questionable, but I have type-doubts:
+                strvar = str(value)
+            else:
+                # Remove whitespace:
+                strvar = str(value).strip()
             os.setxattr(target, prefix + key, strvar.encode())
     elif isinstance(data, list):
         write_xattrs_list(target, data, prefix)
@@ -131,7 +147,7 @@ def main():
     #print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
     metadata = json_data[0]
-    write_xattrs_dict(target, metadata, prefix=prefix)
+    write_xattrs_dict(target, metadata, prefix=prefix, archive=args.archive)
     print("wrote {} xattrs to: {}".format(
         convert_bytes(sys.getsizeof(metadata)),
         target)
