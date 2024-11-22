@@ -85,6 +85,9 @@ def clean_value(value):
     return out
 
 def write_xattrs_list(target, data, prefix=None, archive=True):
+    if not isinstance(data, list):
+        raise ValueError("data must be a list")
+
     for key, value in data.items():
         if archive:
             # preserve:
@@ -94,29 +97,32 @@ def write_xattrs_list(target, data, prefix=None, archive=True):
             # clean/strip:
             strkey = clean_key(key)
             strval = clean_value(value)
+        #print("{} = {}".format(strkey, strval)) #debug
         os.setxattr(target, prefix + strkey, strval.encode())
 
 def write_xattrs_dict(target, data, prefix=None, archive=True):
+    if not isinstance(data, dict):
+        raise ValueError("data must be a dictionary")
+
+    for key, value in data.items():
+        if archive:
+            # preserve:
+            strkey = key
+            strval = str(value) # I have type-doubts and issues.
+        else:
+            # clean/strip:
+            strkey = clean_key(key)
+            strval = clean_value(value)
+        #print("{} = {}".format(strkey, strval)) #debug
+        os.setxattr(target, prefix + strkey, strval.encode())
+
+def write_xattrs(target, data, prefix=None, archive=True):
     if isinstance(data, dict):
-        for key, value in data.items():
-            if archive:
-                # preserve:
-                strkey = key
-                strval = str(value) # I have type-doubts and issues.
-            else:
-                # clean/strip:
-                strkey = clean_key(key)
-                strval = clean_value(value)
-            #print("{} = {}".format(strkey, strval)) #debug
-            os.setxattr(target, prefix + strkey, strval.encode())
+        write_xattrs_dict(target, data, prefix, archive)
     elif isinstance(data, list):
-        write_xattrs_list(target, data, prefix)
-        """
-        for i, item in enumerate(data):
-            os.setxattr(target, f"{i}", json.dumps(item).encode())
-        """
+        write_xattrs_list(target, data, prefix, archive)
     else:
-        raise ValueError("JSON data must be a dictionary or a list.")
+        raise ValueError("data must be a dictionary or a list.")
 
 def read_xattrs(target):
     xattrs = os.listxattr(target)
@@ -160,7 +166,7 @@ def main():
     #print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
     metadata = json_data[0]
-    write_xattrs_dict(target, metadata, prefix=prefix, archive=args.archive)
+    write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
     print("wrote {} xattrs to: {}".format(
         convert_bytes(sys.getsizeof(metadata)),
         target)
