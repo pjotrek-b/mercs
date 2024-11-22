@@ -10,6 +10,8 @@ import argparse
 import json
 import sys
 import os
+import traceback
+import time
 
 
 # --- Commandline parameters:
@@ -89,33 +91,30 @@ def write_xattrs_list(target, data, prefix=None, archive=True):
         raise ValueError("data must be a list")
 
     for key, value in data.items():
-        if archive:
-            # preserve:
-            strkey = key
-            strval = str(value)
-        else:
-            # clean/strip:
-            strkey = clean_key(key)
-            strval = clean_value(value)
-        #print("{} = {}".format(strkey, strval)) #debug
-        os.setxattr(target, prefix + strkey, strval.encode())
+        try:
+            write_xattr(target, key, value, prefix, archive)
+        except Exception as e:
+            print("ERROR: could not write '{} = {}'.".format(key, value))
+            print(e)
+            sleep(1)
+            raise(e)
+            break
 
 def write_xattrs_dict(target, data, prefix=None, archive=True):
     if not isinstance(data, dict):
         raise ValueError("data must be a dictionary")
 
     for key, value in data.items():
-        if archive:
-            # preserve:
-            strkey = key
-            strval = str(value) # I have type-doubts and issues.
-        else:
-            # clean/strip:
-            strkey = clean_key(key)
-            strval = clean_value(value)
-        #print("{} = {}".format(strkey, strval)) #debug
-        os.setxattr(target, prefix + strkey, strval.encode())
+        try:
+            write_xattr(target, key, value, prefix, archive)
+        except Exception as e:
+            print("ERROR: could not write '{} = {}'.".format(key, value))
+            print(e)
+            time.sleep(1)
+            raise(e)
+            break
 
+# Stores a list or dict of key/value pairs as xattrs to `target`.
 def write_xattrs(target, data, prefix=None, archive=True):
     if isinstance(data, dict):
         write_xattrs_dict(target, data, prefix, archive)
@@ -123,6 +122,27 @@ def write_xattrs(target, data, prefix=None, archive=True):
         write_xattrs_list(target, data, prefix, archive)
     else:
         raise ValueError("data must be a dictionary or a list.")
+
+# Store a single xattr, but possibly preprocess/sanitize/normalize key/values
+# before writing it.
+def write_xattr(target, key, value, prefix=None, archive=True):
+    if archive:
+        # preserve:
+        strkey = key
+        strval = str(value) # I have type-doubts and issues.
+    else:
+        # clean/strip:
+        strkey = clean_key(key)
+        strval = clean_value(value)
+    #print("{} = {}".format(strkey, strval)) #debug
+    try:
+        print(".", end='')
+        result = os.setxattr(target, prefix + strkey, strval.encode())
+    except FileExistsError:
+        print("x", end='')
+    except Exception as e:
+        print("ouch.")
+        raise(e)
 
 def read_xattrs(target):
     xattrs = os.listxattr(target)
@@ -135,6 +155,7 @@ def clear_xattrs(target):
 
 
 def show_xattr_limits():
+    # See: https://unix.stackexchange.com/questions/390274/what-are-costs-of-storing-xattrs-on-ext4-btrfs-filesystems
     print("Max. size of an extended attribute: {}".format(convert_bytes(os.XATTR_SIZE_MAX)))
 
 
@@ -166,7 +187,11 @@ def main():
     #print("Removing existing xattrs from {}...".format(target))
     clear_xattrs(target)
     metadata = json_data[0]
-    write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
+    try:
+        write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
+    except Exception as e:
+        print("Failed.")
+
     print("wrote {} xattrs to: {}".format(
         convert_bytes(sys.getsizeof(metadata)),
         target)
