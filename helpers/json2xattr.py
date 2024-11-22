@@ -92,7 +92,7 @@ def write_xattrs_list(target, data, prefix=None, archive=True):
 
     for key, value in data.items():
         try:
-            write_xattr(target, key, value, prefix, archive)
+            written = write_xattr(target, key, value, prefix, archive)
         except Exception as e:
             print("ERROR: could not write '{} = {}'.".format(key, value))
             print(e)
@@ -104,15 +104,31 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
     if not isinstance(data, dict):
         raise ValueError("data must be a dictionary")
 
+    total = {}
+    total['keys'] = 0
+    total['values'] = 0
+
     for key, value in data.items():
         try:
-            write_xattr(target, key, value, prefix, archive)
+            written = write_xattr(target, key, value, prefix, archive)
+            # Add byte sizes:
+            total['keys'] += written['keys']
+            total['values'] += written['values']
+            #print("current: {} +{}".format(total['keys'], total['values']))    # verbose
+
         except Exception as e:
             print("ERROR: could not write '{} = {}'.".format(key, value))
+            #traceback.print_exc()
             print(e)
             time.sleep(1)
             raise(e)
-            break
+
+    total['sum'] = total['keys'] + total['values']
+    print("wrote {} ({} +{}) / {} bytes as attributes.".format(
+        convert_bytes(total['sum']),
+        total['keys'], total['values'],
+        convert_bytes(sys.getsizeof(data))
+        ))
 
 # Stores a list or dict of key/value pairs as xattrs to `target`.
 def write_xattrs(target, data, prefix=None, archive=True):
@@ -126,23 +142,43 @@ def write_xattrs(target, data, prefix=None, archive=True):
 # Store a single xattr, but possibly preprocess/sanitize/normalize key/values
 # before writing it.
 def write_xattr(target, key, value, prefix=None, archive=True):
+    # Count bytes written as attributes:
+    written = {}
+    written['keys'] = 0
+    written['values'] = 0
+
     if archive:
         # preserve:
         strkey = key
-        strval = str(value) # I have type-doubts and issues.
+        strval = value
     else:
         # clean/strip:
         strkey = clean_key(key)
         strval = clean_value(value)
     #print("{} = {}".format(strkey, strval)) #debug
+
+    # We may want to change that when binary data comes in?
+    strval = str(strval).encode() # I have type-doubts and had issues already.
+    strkey = (prefix + strkey).encode() # now it's offical ;P
+
     try:
-        print(".", end='')
-        os.setxattr(target, prefix + strkey, strval.encode())
+        #print(".", end='')
+        os.setxattr(target, strkey, strval, flags=os.XATTR_CREATE)
+        """ verbose:
+        print("current: {} +{} - '{}' = '{}'".format(
+            len(strkey), len(strval), strkey.decode(), strval.decode()
+            ))
+        """
+        written['keys'] += len(strkey)
+        written['values'] += len(strval)
     except FileExistsError:
         print("x", end='')
     except Exception as e:
         print("ouch.")
         raise(e)
+
+    # Brag how much we've made:
+    return written
 
 def read_xattrs(target):
     xattrs = os.listxattr(target)
@@ -191,8 +227,9 @@ def main():
         write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
     except Exception as e:
         print("Failed.")
+        raise(e)
 
-    print("wrote {} xattrs to: {}".format(
+    print("saved xattrs to: {}".format(
         convert_bytes(sys.getsizeof(metadata)),
         target)
         )
