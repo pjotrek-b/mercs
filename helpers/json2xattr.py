@@ -137,7 +137,7 @@ def write_xattr(target, key, value, prefix=None, archive=True):
     #print("{} = {}".format(strkey, strval)) #debug
     try:
         print(".", end='')
-        result = os.setxattr(target, prefix + strkey, strval.encode())
+        os.setxattr(target, prefix + strkey, strval.encode())
     except FileExistsError:
         print("x", end='')
     except Exception as e:
