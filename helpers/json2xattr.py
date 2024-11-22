@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument('-a', '--archive',
             type=bool,
             default=False,
-            help='Preserve source as best as possible. Disables value.strip().'
+            help='Preserve source as best as possible. Disables: value-strip, key-lowercase.'
             )
     return parser
 
@@ -76,26 +76,39 @@ def show_json(json):
 
 # --- handling extended attributes:
 
+def clean_key(key):
+    out = str(key).strip().lower()
+    return out
+
+def clean_value(value):
+    out = str(value).strip().lower()
+    return out
+
 def write_xattrs_list(target, data, prefix=None, archive=True):
     for key, value in data.items():
         if archive:
-            # questionable, but I have type-doubts:
-            strvar = str(value)
+            # preserve:
+            strkey = key
+            strval = str(value)
         else:
-            # Remove whitespace:
-            strvar = str(value).strip()
-        os.setxattr(target, prefix + key, strvar.encode())
+            # clean/strip:
+            strkey = clean_key(key)
+            strval = clean_value(value)
+        os.setxattr(target, prefix + strkey, strval.encode())
 
 def write_xattrs_dict(target, data, prefix=None, archive=True):
     if isinstance(data, dict):
         for key, value in data.items():
             if archive:
-                # questionable, but I have type-doubts:
-                strvar = str(value)
+                # preserve:
+                strkey = key
+                strval = str(value) # I have type-doubts and issues.
             else:
-                # Remove whitespace:
-                strvar = str(value).strip()
-            os.setxattr(target, prefix + key, strvar.encode())
+                # clean/strip:
+                strkey = clean_key(key)
+                strval = clean_value(value)
+            #print("{} = {}".format(strkey, strval)) #debug
+            os.setxattr(target, prefix + strkey, strval.encode())
     elif isinstance(data, list):
         write_xattrs_list(target, data, prefix)
         """
