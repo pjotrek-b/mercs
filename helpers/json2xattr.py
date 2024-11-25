@@ -17,7 +17,9 @@ import time
 # --- Commandline parameters:
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Write JSON data as xattrs to a file.')
+    parser = argparse.ArgumentParser(
+            description='Write JSON data as xattrs to a file.'
+            )
     parser.add_argument('-t', '--target',
             type=str,
             required=True,
@@ -38,6 +40,11 @@ def parse_args():
             type=bool,
             default=False,
             help='Preserve source as best as possible. Disables: value-strip, key-lowercase.'
+            )
+    parser.add_argument('-l', '--lower',
+            type=bool,
+            default=False,
+            help='Force lowercase on all key strings'
             )
     return parser
 
@@ -79,11 +86,17 @@ def show_json(json):
 # --- handling extended attributes:
 
 def clean_key(key):
-    out = str(key).strip().lower()
+    global args
+
+    out = str(key).strip()
+    if (not args.archive and args.lower):
+        out = out.lower()
     return out
 
 def clean_value(value):
-    out = str(value).strip().lower()
+    out = str(value).strip()
+    if (not args.archive and args.lower):
+        out = out.lower()
     return out
 
 def write_xattrs_list(target, data, prefix=None, archive=True):
@@ -155,7 +168,8 @@ def write_xattr(target, key, value, prefix=None, archive=True):
         # clean/strip:
         strkey = clean_key(key)
         strval = clean_value(value)
-    #print("{} = {}".format(strkey, strval)) #debug
+
+    print("{} = {}".format(strkey.ljust(30), strval)) #debug
 
     # We may want to change that when binary data comes in?
     strval = str(strval).encode() # I have type-doubts and had issues already.
@@ -200,6 +214,7 @@ def show_xattr_limits():
 def main():
     # Get commandline arguments/options:
     parser = parse_args()
+    global args
     args = parser.parse_args()
     handle_args(args)
 
