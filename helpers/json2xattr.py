@@ -41,7 +41,12 @@ def parse_args():
             default=False,
             help='Preserve source as best as possible. Disables: value-strip, key-lowercase.'
             )
-    parser.add_argument('-l', '--lower',
+    parser.add_argument('-lk', '--lower_key',
+            type=bool,
+            default=False,
+            help='Force lowercase on all key strings'
+            )
+    parser.add_argument('-lv', '--lower_value',
             type=bool,
             default=False,
             help='Force lowercase on all key strings'
@@ -89,13 +94,13 @@ def clean_key(key):
     global args
 
     out = str(key).strip()
-    if (not args.archive and args.lower):
+    if (not args.archive and args.lower_key):
         out = out.lower()
     return out
 
 def clean_value(value):
     out = str(value).strip()
-    if (not args.archive and args.lower):
+    if (not args.archive and args.lower_value):
         out = out.lower()
     return out
 
