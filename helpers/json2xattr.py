@@ -174,7 +174,7 @@ def write_xattr(target, key, value, prefix=None, archive=True):
         strkey = clean_key(key)
         strval = clean_value(value)
 
-    print("{} = {}".format(strkey.ljust(30), strval)) #debug
+    print("{} = '{}'".format(strkey.ljust(30), strval)) #debug
 
     # We may want to change that when binary data comes in?
     strval = str(strval).encode() # I have type-doubts and had issues already.
