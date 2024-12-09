@@ -1,8 +1,12 @@
 .PHONY: thincopy tag_source tag_copy
 
-PREFIX = 'user.exiftool.'
+PREFIX = user.exiftool.
 SOURCE ?= music
 TARGET ?= aha
+
+LOCAL_BIN := /usr/local/bin
+J2X := json2xattr
+
 
 # This allows to create an xattr-only copy of existing files:
 # Looks exactly like the original source tree, but with 0-Byte files.
@@ -23,4 +27,6 @@ tag_copy:
 
 
 install:
-	cp -av json2xattr.py /usr/local/bin/json2xattr
+	@echo "This will install $(J2X) in $(LOCAL_BIN)."
+	@echo -n "Are you sure? [y/N] " && read ans && if [ $${ans:-'N'} = 'y' ]; then echo "Okay."; fi
+	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
