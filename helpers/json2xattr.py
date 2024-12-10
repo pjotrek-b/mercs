@@ -179,7 +179,10 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
 
     total['sum'] = total['keys'] + total['values']
 
-    print("\nwrote {} ({} +{}) / {} as attributes on '{}'.".format(
+    if (args.verbose > 0):
+        print() # linebreak if verbose
+
+    print("wrote {} ({} +{}) / {} as attributes on '{}'.".format(
         convert_bytes(total['sum']),
         total['keys'], total['values'],
         convert_bytes(sys.getsizeof(data)),
