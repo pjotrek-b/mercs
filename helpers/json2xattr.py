@@ -185,7 +185,10 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
     total['sum'] = total['keys'] + total['values']
 
     if (args.verbose > 0):
-        print() # linebreak if verbose
+        if (args.quiet):
+            print(".", end='')
+        else:
+            print() # linebreak if verbose
 
     if (not args.quiet):
         print("wrote {} ({} +{}) / {} as attributes on '{}'.".format(
@@ -257,7 +260,7 @@ def write_xattr(target, key, value, prefix=None, archive=True):
         written['keys'] += len(strkey)
         written['values'] += len(strval)
     except FileExistsError:
-        if (args.verbose == 1):
+        if (args.verbose == 1) and (not args.quiet):
             print('*', end='')
         if (args.verbose > 4):
             print("exists: {} = '{}'".format(strkey.ljust(30), strval))
