@@ -21,7 +21,7 @@ thincopy:
 	cp -n --attributes-only --preserve=all -Lr $(SOURCE) $(TARGET)
 
 # Reads embedded tags and writes them to xattrs (source = target):
-tag_source:
+xattrs_on_source:
 	@echo "De-embedding metadata from $(SOURCE) onto ITSELF."
 	@echo -n $(PROMPT)
 	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j "$0" | json2xattr -t "$0" -p "$(PREFIX)" -j -' {} \;
@@ -30,10 +30,18 @@ tag_source:
 # Reads embedded tags from $SOURCE and writes them as xattrs on $TARGET.
 # Requires $TARGET (files) to exist for each $SOURCE.
 # Use after "make thinkcopy".
-tag_copy:
+xattrs_on_copy:
 	@echo "Copying metadata from $(SOURCE) to $(TARGET)..."
 	@echo -n $(PROMPT)
 	find $(SOURCE)/ -type f -exec sh -c './brainswap.sh "$(SOURCE)" "$(TARGET)" "{}"' \;
+
+
+# Reads embedded metadata from $(SOURCE) and stores it as JSON file next to its
+# $(TARGET) equivalent.
+json_on_copy:
+	@echo "Copying metadata from $(SOURCE) to $(TARGET) as JSON file..."
+	@echo -n $(PROMPT)
+	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j -q -w $(TARGET)/%1:1d%f.%e.json "{}"' \;
 
 
 install:
