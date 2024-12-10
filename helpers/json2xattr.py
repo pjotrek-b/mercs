@@ -37,25 +37,31 @@ def parse_args():
             help='Attribute namespace prefix: defaults to "user." (POSIX)'
             )
     parser.add_argument('-a', '--archive',
-            type=bool,
             default=False,
+            action='store_true',
             help='Preserve source as best as possible. Disables: value-strip, key-lowercase.'
             )
     parser.add_argument('-lk', '--lower_key',
-            type=bool,
             default=False,
+            action='store_true',
             help='Force lowercase on all key strings'
             )
     parser.add_argument('-lv', '--lower_value',
-            type=bool,
             default=False,
+            action='store_true',
             help='Force lowercase on all key strings'
             )
     parser.add_argument('-c', '--clear_first',
-            type=bool,
             default=False,
-            help='Clear (=remove) existing xattrs before writing new ones. Nice to clean dirty leftovers.'
+            action='store_true',
+            help='Clear (=remove) existing xattrs before writing new ones. Nice to clean dirty leftovers. May come with performance penalty though.'
             )
+    parser.add_argument('-ev', '--empty_values',
+            default=False,
+            action='store_true',
+            help='By default, empty values will NOT be written to target. Use this to write empty values.'
+            )
+
     return parser
 
 def handle_args(args):
@@ -165,6 +171,8 @@ def write_xattrs(target, data, prefix=None, archive=True):
 # Store a single xattr, but possibly preprocess/sanitize/normalize key/values
 # before writing it.
 def write_xattr(target, key, value, prefix=None, archive=True):
+    global args
+
     # Count bytes written as attributes:
     written = {}
     written['keys'] = 0
@@ -179,6 +187,10 @@ def write_xattr(target, key, value, prefix=None, archive=True):
         strkey = clean_key(key)
         strval = clean_value(value)
 
+    # Skip empty values (unless allowed).
+    if (not strval) and (not args.empty_values):
+        return written
+
     print("{} = '{}'".format(strkey.ljust(30), strval)) #debug
 
     # We may want to change that when binary data comes in?
@@ -187,6 +199,7 @@ def write_xattr(target, key, value, prefix=None, archive=True):
 
     try:
         #print(".", end='')
+        # This is where things get written for real:
         os.setxattr(target, strkey, strval, flags=os.XATTR_CREATE)
         """ verbose:
         print("current: {} +{} - '{}' = '{}'".format(
