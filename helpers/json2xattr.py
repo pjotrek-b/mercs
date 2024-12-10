@@ -72,16 +72,20 @@ def parse_args():
 def handle_args(args):
     # TODO: args.json: check if file exists.
     if (args.verbose > 0):
-        print("Verbosity: {}".format(args.verbose))
+        print("\nVerbosity: {}".format(args.verbose))
 
         if (args.verbose > 1):
-            print("\nUsed configuration:")
+            print("Used configuration:")
+            print("------------------------")
             print("Target:          {}".format(args.target))
             print("Default prefix:  {}".format(args.prefix))
             print("Lowercase key:   {}".format(args.lower_key))
             print("Lowercase value: {}".format(args.lower_value))
             print("Clear first:     {}".format(args.clear_first))
             print("Empty values:    {}".format(args.empty_values))
+            print("------------------------")
+
+        print("\n")
 
 # This function will convert bytes to MB.... GB... etc
 # use "step_unit=1024.0" for KiB, etc.
@@ -143,7 +147,11 @@ def write_xattrs_list(target, data, prefix=None, archive=True):
             raise(e)
             break
 
+    return written
+
 def write_xattrs_dict(target, data, prefix=None, archive=True):
+    global args
+
     if not isinstance(data, dict):
         raise ValueError("data must be a dictionary")
 
@@ -157,7 +165,10 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
             # Add byte sizes:
             total['keys'] += written['keys']
             total['values'] += written['values']
-            #print("current: {} +{}".format(total['keys'], total['values']))    # verbose
+
+            if (args.verbose > 1):
+                #print("current: {} +{}".format(total['keys'], total['values']))
+                pass
 
         except Exception as e:
             print("ERROR: could not write '{} = {}'.".format(key, value))
@@ -167,20 +178,27 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
             raise(e)
 
     total['sum'] = total['keys'] + total['values']
-    print("wrote {} ({} +{}) / {} bytes as attributes.".format(
+
+    print("\nwrote {} ({} +{}) / {} as attributes on '{}'.".format(
         convert_bytes(total['sum']),
         total['keys'], total['values'],
-        convert_bytes(sys.getsizeof(data))
+        convert_bytes(sys.getsizeof(data)),
+        target
         ))
+
+    return written
 
 # Stores a list or dict of key/value pairs as xattrs to `target`.
 def write_xattrs(target, data, prefix=None, archive=True):
+    written = {}
     if isinstance(data, dict):
-        write_xattrs_dict(target, data, prefix, archive)
+        written = write_xattrs_dict(target, data, prefix, archive)
     elif isinstance(data, list):
-        write_xattrs_list(target, data, prefix, archive)
+        written = write_xattrs_list(target, data, prefix, archive)
     else:
         raise ValueError("data must be a dictionary or a list.")
+
+    return written
 
 # Store a single xattr, but possibly preprocess/sanitize/normalize key/values
 # before writing it.
@@ -205,7 +223,8 @@ def write_xattr(target, key, value, prefix=None, archive=True):
     if (not strval) and (not args.empty_values):
         return written
 
-    print("{} = '{}'".format(strkey.ljust(30), strval)) #debug
+    if (args.verbose > 2):
+        print("{} = '{}'".format(strkey.ljust(30), strval)) #debug
 
     # We may want to change that when binary data comes in?
     strval = str(strval).encode() # I have type-doubts and had issues already.
@@ -215,15 +234,25 @@ def write_xattr(target, key, value, prefix=None, archive=True):
         #print(".", end='')
         # This is where things get written for real:
         os.setxattr(target, strkey, strval, flags=os.XATTR_CREATE)
-        """ verbose:
-        print("current: {} +{} - '{}' = '{}'".format(
-            len(strkey), len(strval), strkey.decode(), strval.decode()
-            ))
-        """
+
+        if (args.verbose > 3):
+            # Show information about current key/value set:
+            print("current: {} +{} - '{}' = '{}'".format(
+                len(strkey),
+                len(strval),
+                strkey.decode(),
+                strval.decode()
+                ))
+
+            print("blip!")
         written['keys'] += len(strkey)
         written['values'] += len(strval)
     except FileExistsError:
-        print("x", end='')
+        if (args.verbose == 1):
+            print('*', end='')
+        if (args.verbose > 4):
+            print("exists: {} = '{}'".format(strkey.ljust(30), strval))
+
     except Exception as e:
         print("ouch.")
         raise(e)
@@ -257,41 +286,41 @@ def main():
 
     #print("parsed args.")
 
-    # Use prefix from args (or default):
+    # Shortcut variables for popular options:
     prefix = args.prefix
+    target = args.target
 
     if args.json == '-':
         json_data = read_json_stdin()
     else:
         json_data = read_json_file(args.json)
 
-    #print("read json.\n")
-    #show_json(json_data)
+    if (args.verbose > 4):
+        # Very noisy, but useful for debugging:
+        #print("read json.\n")
+        show_json(json_data)
 
 
-    target = args.target
-    #show_xattr_limits()    # nice, but verbose
+    if (args.verbose > 3):
+        show_xattr_limits()    # nice, but verbose
 
     if (args.clear_first):
-        #print("Removing existing xattrs from {}...".format(target))
+        if (args.verbose > 0):
+            print("Removing existing xattrs from {}...".format(target))
         clear_xattrs(target)
 
     # Use the JSON input as metadata to write:
     metadata = json_data[0]
     try:
-        write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
+        written = write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
     except Exception as e:
         print("Failed.")
         raise(e)
 
-    print("saved xattrs to: {}".format(
-        convert_bytes(sys.getsizeof(metadata)),
-        target)
-        )
-
-    #print("\nReading xattrs from target:")
     xattrs = read_xattrs(target)
-    #print(xattrs)  # pretty verbose. But nice to see what's happening.
+    if (args.verbose > 3):
+        print("\nRead xattrs keys from target:")
+        print(xattrs)  # pretty verbose. But nice to see what's happening.
 
 if __name__ == '__main__':
     main()
