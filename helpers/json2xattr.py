@@ -51,6 +51,11 @@ def parse_args():
             default=False,
             help='Force lowercase on all key strings'
             )
+    parser.add_argument('-c', '--clear_first',
+            type=bool,
+            default=False,
+            help='Clear (=remove) existing xattrs before writing new ones. Nice to clean dirty leftovers.'
+            )
     return parser
 
 def handle_args(args):
@@ -240,8 +245,11 @@ def main():
     target = args.target
     #show_xattr_limits()    # nice, but verbose
 
-    #print("Removing existing xattrs from {}...".format(target))
-    clear_xattrs(target)
+    if (args.clear_first):
+        #print("Removing existing xattrs from {}...".format(target))
+        clear_xattrs(target)
+
+    # Use the JSON input as metadata to write:
     metadata = json_data[0]
     try:
         write_xattrs(target, metadata, prefix=prefix, archive=args.archive)
