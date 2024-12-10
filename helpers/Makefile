@@ -9,8 +9,15 @@ TARGET ?= aha
 LOCAL_BIN := /usr/local/bin
 J2X := json2xattr
 
-# Prompt to exit(1) on "NO".
-PROMPT := "Are you sure? [y/N] " && read ans && if [ $${ans:-'N'} = 'n' ]; then exit 1; fi
+# Uncomment this to auto-run all things:
+YES := 1
+
+ifdef YES
+	PROMPT := sleep 2
+else
+	# Prompt to exit(1) on "NO".
+	PROMPT := "Are you sure? [y/N] " && read ans && if [ $${ans:-'N'} = 'n' ]; then exit 1; fi
+endif
 
 # This allows to create an xattr-only copy of existing files:
 # Looks exactly like the original source tree, but with 0-Byte files.
