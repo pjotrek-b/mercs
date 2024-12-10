@@ -25,6 +25,11 @@ def parse_args():
             default=0,
             help='Increase verbosity level.'
             )
+    parser.add_argument('-q', '--quiet',
+            action='store_true',
+            default=False,
+            help='Be as quiet as possible with text output.'
+            )
     parser.add_argument('-t', '--target',
             type=str,
             required=True,
@@ -182,12 +187,13 @@ def write_xattrs_dict(target, data, prefix=None, archive=True):
     if (args.verbose > 0):
         print() # linebreak if verbose
 
-    print("wrote {} ({} +{}) / {} as attributes on '{}'.".format(
-        convert_bytes(total['sum']),
-        total['keys'], total['values'],
-        convert_bytes(sys.getsizeof(data)),
-        target
-        ))
+    if (not args.quiet):
+        print("wrote {} ({} +{}) / {} as attributes on '{}'.".format(
+            convert_bytes(total['sum']),
+            total['keys'], total['values'],
+            convert_bytes(sys.getsizeof(data)),
+            target
+            ))
 
     return written
 
