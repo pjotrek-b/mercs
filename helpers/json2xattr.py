@@ -20,6 +20,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
             description='Write JSON data as xattrs to a file.'
             )
+    parser.add_argument('-v', '--verbose',
+            action='count',
+            default=0,
+            help='Increase verbosity level.'
+            )
     parser.add_argument('-t', '--target',
             type=str,
             required=True,
@@ -66,8 +71,17 @@ def parse_args():
 
 def handle_args(args):
     # TODO: args.json: check if file exists.
-    #print("Default prefix: '{}'".format(args.prefix)) # verbose
-    pass
+    if (args.verbose > 0):
+        print("Verbosity: {}".format(args.verbose))
+
+        if (args.verbose > 1):
+            print("\nUsed configuration:")
+            print("Target:          {}".format(args.target))
+            print("Default prefix:  {}".format(args.prefix))
+            print("Lowercase key:   {}".format(args.lower_key))
+            print("Lowercase value: {}".format(args.lower_value))
+            print("Clear first:     {}".format(args.clear_first))
+            print("Empty values:    {}".format(args.empty_values))
 
 # This function will convert bytes to MB.... GB... etc
 # use "step_unit=1024.0" for KiB, etc.
