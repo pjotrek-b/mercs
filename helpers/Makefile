@@ -33,7 +33,7 @@ xattrs_on_source:
 xattrs_on_copy:
 	@echo "Copying metadata from $(SOURCE) to $(TARGET)..."
 	@echo -n $(PROMPT)
-	find $(SOURCE)/ -type f -exec sh -c './brainswap.sh "$(SOURCE)" "$(TARGET)" "{}"' \;
+	find $(SOURCE)/ -type f -exec sh -c './brainswap.sh "$(SOURCE)" "$(TARGET)" "{}" "$(PREFIX)"' \;
 
 
 # Reads embedded metadata from $(SOURCE) and stores it as JSON file next to its
