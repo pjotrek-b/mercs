@@ -3,6 +3,8 @@ A term, btw, which I consider "google-unique" with no context so far to metadata
 
 Given that, I'm quite surprised to see Mixtral seems to have read my notes on github on AHAlodeck and mercs.
 
+The [original logfile (prompt 6-8)](https://github.com/ArkThis/AHA_ObjectWorld/blob/master/res/iamai/duck.ai_2024-12-08_21-54-54.txt) is available as full reference.
+
 
 
 # User prompt 6 of 8 - 12/8/2024, 9:54:22 PM:
@@ -39,7 +41,7 @@ Given that, I'm quite surprised to see Mixtral seems to have read my notes on gi
 
 # Wow.
 
-I've given no context whatsoever. Just "what is mercs?".
+**DISCLAIMER:** I /may/ have given the machine some context, by asking about xattrs and 
 It even includes exiftool and hashcodes.
 
 By the book.
