@@ -10,9 +10,8 @@
 # You can do the following to get the actual byte size sent in (after base64
 # encoding):
 #
-# `cat $(SAMPLE) | base64 | wc`
-# >    786     786   60486
-# (The 3rd column will give the bytes)
+# `cat $(SAMPLE) | base64 | wc -c`
+# > 60486 (Bytes)
 #
 # Example output:
 # =======================
@@ -30,12 +29,26 @@
 #
 # -----------------------
 
-SAMPLE := file_in.bin
 XA_KEY := user.bigdata
 CONTAINER := bigdata.test
+
+SOURCE_IMAGE := image.png
+SAMPLE64 := file_in.base64
+
+SAMPLE := file_in.bin
 TARGET := file_out.bin
 
-$(CONTAINER):
+
+
+$(SAMPLE):
+	convert $(SOURCE_IMAGE) -resize 1000x1000 -density 72 -units PixelsPerInch -quality 80% JPG:$(SAMPLE)
+
+$(SAMPLE64): $(SAMPLE)
+	cat $(SAMPLE) | base64 > $(SAMPLE64)
+	@wc -c $(SAMPLE)
+	@wc -c $(SAMPLE64)
+
+$(CONTAINER): $(SAMPLE)
 	touch $(CONTAINER)
 	setfattr -n $(XA_KEY) -v "`cat $(SAMPLE) | base64`" $(CONTAINER)
 
@@ -45,11 +58,14 @@ $(TARGET): $(CONTAINER)
 	du -sh $(CONTAINER)
 
 clean:
-	rm $(CONTAINER) $(TARGET)
+	rm -f $(CONTAINER) $(TARGET)
+	rm -f $(SAMPLE) $(SAMPLE64)
 
 .PHONY: clean all
 
 all:
-	make $(TARGET)
+	@make clean
+	@make $(SAMPLE)
+	@make $(TARGET)
 
 
