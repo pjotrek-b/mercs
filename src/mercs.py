@@ -29,6 +29,11 @@ class Ui(QtWidgets.QMainWindow):
         aha = AHAlodeck(main_window=self)
         aha.initParameters(self.args)
         self.aha = aha                      # finally
+        self.initProperties()
+
+
+    def initProperties(self):
+        aha = self.aha
 
         # Default length/width for entries if no xattrs exist, yet:
         maxWord = {}
@@ -65,7 +70,6 @@ class Ui(QtWidgets.QMainWindow):
         return True
 
 
-
     def initButtons(self):
         self.btnAddEntry.clicked.connect(self.btnAddEntryClicked)
         self.btnDelEntry.clicked.connect(self.btnDelEntryClicked)
@@ -89,6 +93,10 @@ class Ui(QtWidgets.QMainWindow):
         maxWord = {}
         maxWord['key'] = aha.longestWord(kv_list[0])
         maxWord['value'] = aha.longestWord(kv_list[1])
+
+        # Confine the max. size of a table column:
+        maxWord['key_limit'] = min(len(maxWord['key']), 42)
+        maxWord['value_limit'] = min(len(maxWord['value']), 62)
         #print("MAX key: {}, value: {}".format(len(maxWord['key']), len(maxWord['value'])))
         self.maxWord = maxWord
 
@@ -96,12 +104,14 @@ class Ui(QtWidgets.QMainWindow):
     def initTable(self, table):
         self.getContentLength()
 
-        table.setColumnCount(3)
+        #table.setColumnCount(2)
         table.setRowCount(len(self.aha.getMetadata()))
 
-        table.setHorizontalHeaderLabels(['Key', 'Value', 'Description'])
-        table.setColumnWidth(0, len(self.maxWord['key']) * 7)       # "7" used as random char-width (in px)
-        table.setColumnWidth(1, len(self.maxWord['value']) * 7)
+
+        table.setHorizontalHeaderLabels(['Key', 'Value'])
+        # "7" used as multiplier for random char-width (in px)
+        table.setColumnWidth(0, self.maxWord['key_limit'] * 7)
+        table.setColumnWidth(1, self.maxWord['value_limit'] * 7)
         return table
 
 
