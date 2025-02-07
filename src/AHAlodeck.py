@@ -1,6 +1,5 @@
 # This Python file uses the following encoding: utf-8
 import xattr
-import argparse
 from pprint import pprint
 
 
@@ -13,16 +12,6 @@ class AHAlodeck():
         # super().__init__(parent)
         print("Roger: Init.")
         print("Window: {}".format(window.windowTitle()))
-
-    def get_args(self):
-        parser = argparse.ArgumentParser(
-            prog='RightClickEditMetadata',
-            description='What you\'ve always dreamed of: Simply right-click and: Edit. Save.',
-            epilog='Text at the bottom of help')
-
-        parser.add_argument('file')
-
-        return parser
 
     def longestWord(self, data):
         maximum = 0
@@ -96,7 +85,7 @@ class AHAlodeck():
         self.metadata = metadata
 
     def writeMetadata(self, metadata):
-        filename = self.objects[0]  # TODO: currently it can only do 1.
+        filename = self.objects['filename']  # TODO: currently it can only do 1 at a time.
         xattrs = self.xattrs
 
         #TODO: Write all changes atomically? meaning: delete everything
@@ -127,19 +116,13 @@ class AHAlodeck():
         self.metadata = self._metadata.copy()
 
 
-    def initParameters(self):
-        # Read CLI arguments/parameters:
-        self.parser = self.get_args()
-        self.args = self.parser.parse_args()
-
-        self.objects : list = []
-        self.objects.append(self.args.file)
-        pprint(self.objects)
+    def initParameters(self, filename):
+        # TODO: Exception handling on given filename resource.
 
         # Read xattr metadata:
-        self.xattrs = xattr.xattr(self.args.file)
+        self.xattrs = xattr.xattr(filename)
         metadata = self.xattrs.items()
 
-        #metadata = self.readMetadata(self.args.file)
+        #metadata = self.readMetadata(filename)
         self._metadata = metadata.copy()    # Keep a clone of the original data read from the filesystem.
         self.metadata = metadata            # This is our working copy.

@@ -4,6 +4,8 @@
 # MERCS = Metadata Edit? Right-Click: Save.
 
 import sys
+import argparse
+
 from os import path
 from AHAlodeck import AHAlodeck
 
@@ -21,8 +23,12 @@ class Ui(QtWidgets.QMainWindow):
         uic.loadUi(ui_mainwindow, self)   # Load the .ui file
         self.show()                         # Show the GUI
 
+        self.objects = dict()
+        self.objects = self.parseArgs()
+        pprint(self.objects)    # DEBUG
+
         aha = AHAlodeck(main_window=self)
-        aha.initParameters()
+        aha.initParameters(self.objects['filename'])
         self.aha = aha                      # finally
 
         # Default length/width for entries if no xattrs exist, yet:
@@ -35,6 +41,31 @@ class Ui(QtWidgets.QMainWindow):
         self.initTableData(table, aha.getMetadataText())
         self.initButtons()
         self.table = table
+
+
+    def getArgs(self):
+        parser = argparse.ArgumentParser(
+            prog='RightClickEditMetadata',
+            description='What you\'ve always dreamed of: Simply right-click and: Edit. Save.',
+            epilog='Text at the bottom of help')
+
+        parser.add_argument('-f', '--filename',
+            type=str,
+            required=True,
+            help='Name of the file/folder to edit metadata of.'
+            )
+
+        return parser
+
+
+    def parseArgs(self):
+        # Read CLI arguments/parameters:
+        self.parser = self.getArgs()
+        self.args = self.parser.parse_args()
+
+        objects = {'filename' : self.args.filename}
+        return objects
+
 
 
     def initButtons(self):
