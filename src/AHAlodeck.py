@@ -85,7 +85,7 @@ class AHAlodeck():
         self.metadata = metadata
 
     def writeMetadata(self, metadata):
-        filename = self.objects['filename']  # TODO: currently it can only do 1 at a time.
+        filename = self.filename  # TODO: currently it can only do 1 at a time.
         xattrs = self.xattrs
 
         #TODO: Write all changes atomically? meaning: delete everything
@@ -116,11 +116,15 @@ class AHAlodeck():
         self.metadata = self._metadata.copy()
 
 
-    def initParameters(self, filename):
+    def initParameters(self, args):
+
+        self.args = args;       # Make the args available to the Object
+
         # TODO: Exception handling on given filename resource.
+        self.filename = self.args.filename
 
         # Read xattr metadata:
-        self.xattrs = xattr.xattr(filename)
+        self.xattrs = xattr.xattr(self.filename)
         metadata = self.xattrs.items()
 
         #metadata = self.readMetadata(filename)

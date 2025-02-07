@@ -23,12 +23,11 @@ class Ui(QtWidgets.QMainWindow):
         uic.loadUi(ui_mainwindow, self)   # Load the .ui file
         self.show()                         # Show the GUI
 
-        self.objects = dict()
-        self.objects = self.parseArgs()
-        pprint(self.objects)    # DEBUG
+        self.parseArgs()
+        pprint(self.args)    # DEBUG
 
         aha = AHAlodeck(main_window=self)
-        aha.initParameters(self.objects['filename'])
+        aha.initParameters(self.args)
         self.aha = aha                      # finally
 
         # Default length/width for entries if no xattrs exist, yet:
@@ -63,8 +62,7 @@ class Ui(QtWidgets.QMainWindow):
         self.parser = self.getArgs()
         self.args = self.parser.parse_args()
 
-        objects = {'filename' : self.args.filename}
-        return objects
+        return True
 
 
 
