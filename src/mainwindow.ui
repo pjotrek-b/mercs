@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>812</width>
+    <width>785</width>
     <height>290</height>
    </rect>
   </property>
@@ -123,7 +123,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>812</width>
+     <width>785</width>
      <height>21</height>
     </rect>
    </property>
@@ -131,10 +131,19 @@
     <property name="title">
      <string>Menu</string>
     </property>
+    <addaction name="actionOpen_File"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpen_File">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open &amp;File</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
