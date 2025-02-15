@@ -81,16 +81,26 @@ class Ui(QtWidgets.QMainWindow):
     def getContentLength(self):
         aha = self.aha
 
+        # Default to a sane textfield length/size:
+        maxWord = {
+                'key': 42,     # TODO: Change these default values to some constants somewhere (class static const?)
+                'key_limit': 42,
+
+                'value': 62,
+                'value_limit': 62
+                }
+
         kv_list = aha.get_kv_list(aha.getMetadataText())
 
-        # Abort safely if attribute list is empty:
+
+        # If no attributes are set yet (=list empty)...
         if not kv_list:
+        # ...and then return safely:
             print("no attributes set yet.");
-            return None
+            return maxWord
 
         #pprint(kv_list) # DEBUG DELME
 
-        maxWord = {}
         maxWord['key'] = aha.longestWord(kv_list[0])
         maxWord['value'] = aha.longestWord(kv_list[1])
 
@@ -98,11 +108,12 @@ class Ui(QtWidgets.QMainWindow):
         maxWord['key_limit'] = min(len(maxWord['key']), 42)
         maxWord['value_limit'] = min(len(maxWord['value']), 62)
         #print("MAX key: {}, value: {}".format(len(maxWord['key']), len(maxWord['value'])))
-        self.maxWord = maxWord
+
+        return maxWord
 
 
     def initTable(self, table):
-        self.getContentLength()
+        self.maxWord = self.getContentLength()
 
         #table.setColumnCount(2)
         table.setRowCount(len(self.aha.getMetadata()))
