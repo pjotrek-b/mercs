@@ -6,12 +6,11 @@ from pprint import pprint
 class AHAlodeck():
     encoding = "utf-8"                  # Default text encoding
 
-    def __init__(self, main_window):
-        window = main_window
+    def __init__(self):
         self.metadata: list = []
         # super().__init__(parent)
-        print("Roger: Init.")
-        print("Window: {}".format(window.windowTitle()))
+        print("Roger: Init AHAlodeck.")
+        #print("Window: {}".format(window.windowTitle()))
 
     def longestWord(self, data):
         maximum = 0
@@ -116,17 +115,31 @@ class AHAlodeck():
         self.metadata = self._metadata.copy()
 
 
-    def initParameters(self, args):
+    def setFilename(self, filename):
+        self.filename = filename
+
+
+    def loadXattrs(self, filename=None):
+        if not filename:
+            filename = self.filename
+
+        print("loading xattrs from {}".format(filename))
+
+        # Read xattr metadata:
+        self.xattrs = xattr.xattr(filename)
+        metadata = self.xattrs.items()
+
+        self._metadata = metadata.copy()    # Keep a clone of the original data read from the filesystem.
+        self.metadata = metadata            # This is our working copy.
+
+
+    def initParameters(self, args, filename=None):
 
         self.args = args;       # Make the args available to the Object
 
         # TODO: Exception handling on given filename resource.
-        self.filename = self.args.filename
+        if not filename:
+            filename = self.args.filename   # load from arguments
+        self.filename = filename
 
-        # Read xattr metadata:
-        self.xattrs = xattr.xattr(self.filename)
-        metadata = self.xattrs.items()
-
-        #metadata = self.readMetadata(filename)
-        self._metadata = metadata.copy()    # Keep a clone of the original data read from the filesystem.
-        self.metadata = metadata            # This is our working copy.
+        self.loadXattrs()

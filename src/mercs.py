@@ -10,7 +10,7 @@ from os import path
 from AHAlodeck import AHAlodeck
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QTableWidgetItem
+from PyQt5.QtWidgets import (QApplication, QTableWidgetItem, QFileDialog)
 from PyQt5 import uic
 
 from pprint import pprint
@@ -19,17 +19,40 @@ from pprint import pprint
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()          # Call the inherited classes __init__ method
-        ui_mainwindow = path.abspath(path.join(path.dirname(__file__), 'mainwindow.ui'))
-        uic.loadUi(ui_mainwindow, self)   # Load the .ui file
+        uiMainWindow = path.abspath(path.join(path.dirname(__file__), 'mainwindow.ui'))
+
+        uic.loadUi(uiMainWindow, self)      # Load the .ui file
         self.show()                         # Show the GUI
+
+        self.initMenu()
 
         self.parseArgs()
         pprint(self.args)    # DEBUG
 
-        aha = AHAlodeck(main_window=self)
+        aha = AHAlodeck()
         aha.initParameters(self.args)
         self.aha = aha                      # finally
         self.initProperties()
+
+
+    def openFileDialog(self):
+        aha = self.aha
+
+        # dialogFileOpen = dfo
+        dfo = QtWidgets.QFileDialog(self)
+        dfo.setWindowTitle("Select Filesystem Object...")
+        dfo.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dfo.setViewMode(QFileDialog.ViewMode.Detail)
+
+        if dfo.exec():
+            selectedFiles = dfo.selectedFiles()
+            for filename in selectedFiles:
+                self.aha.setFilename(filename)  # TODO: handle multiple. pleeeez ;)
+                self.aha.loadXattrs()
+                self.btnReloadClicked()
+            return selectedFiles
+
+        return None
 
 
     def initProperties(self):
@@ -76,6 +99,13 @@ class Ui(QtWidgets.QMainWindow):
         self.btnSave.clicked.connect(self.btnSaveClicked)
         self.btnReload.clicked.connect(self.btnReloadClicked)
         self.btnRevert.clicked.connect(self.btnRevertClicked)
+
+    ##
+    # Initialize menu actions.
+    # 
+    def initMenu(self):
+        self.actionOpen_File.setEnabled(True)
+        self.actionOpen_File.triggered.connect(self.openFileDialog)
 
 
     def getContentLength(self):
@@ -187,7 +217,8 @@ class Ui(QtWidgets.QMainWindow):
         aha = self.aha
 
         aha.revertMetadata()
-        print(aha.getMetadata())
+        #print(aha.getMetadata())
+        self.btnReloadClicked()
 
 
     def getMetadataFromTable(self):

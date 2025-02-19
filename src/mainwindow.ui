@@ -176,7 +176,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen_File">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Open &amp;File</string>
