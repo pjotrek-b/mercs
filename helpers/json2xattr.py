@@ -54,12 +54,12 @@ def parse_args():
     parser.add_argument('-lk', '--lower_key',
             default=False,
             action='store_true',
-            help='Force lowercase on all key strings'
+            help='Force lowercase on all key-strings'
             )
     parser.add_argument('-lv', '--lower_value',
             default=False,
             action='store_true',
-            help='Force lowercase on all key strings'
+            help='Force lowercase on all value-strings'
             )
     parser.add_argument('-c', '--clear_first',
             default=False,
@@ -76,7 +76,7 @@ def parse_args():
 
 def handle_args(args):
     # TODO: args.json: check if file exists.
-    if (args.verbose > 0):
+    if (args.verbose > 0) and (not args.quiet):
         print("\nVerbosity: {}".format(args.verbose))
 
         if (args.verbose > 1):
