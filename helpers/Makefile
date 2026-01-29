@@ -7,10 +7,10 @@ SOURCE ?= music
 TARGET ?= aha
 
 LOCAL_BIN := /usr/local/bin
-J2X := json2xattr
+J2X := j2x
 
 # Uncomment this to auto-run all things:
-YES := 1
+#YES := 1
 
 ifdef YES
 	PROMPT := sleep 2
@@ -32,7 +32,7 @@ thincopy:
 xattrs_on_source:
 	@echo "De-embedding metadata from '$(SOURCE)' onto ITSELF."
 	@echo -n $(PROMPT)
-	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j "$0" | json2xattr -t "$0" -p "$(PREFIX)" -j -' {} \;
+	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j "$0" | $(J2X) -t "$0" -p "$(PREFIX)" -j -' {} \;
 
 
 # Reads embedded tags from $SOURCE and writes them as xattrs on $TARGET.
@@ -47,12 +47,13 @@ xattrs_on_copy:
 # Reads embedded metadata from $(SOURCE) and stores it as JSON file next to its
 # $(TARGET) equivalent.
 json_on_copy:
-	@echo "Copying metadata from '$(SOURCE)' to '$(TARGET)' as JSON file..."
+	@echo "Copying EXIFTOOL metadata from '$(SOURCE)' to '$(TARGET)' as JSON file..."
 	@echo -n $(PROMPT)
 	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j -q -w $(TARGET)/%:1d%f.%e.json "{}"' \;
 
 
 install:
+	# TODO: use make's `install` routines to copy stuff?
 	@echo "This will install $(J2X) in $(LOCAL_BIN)."
 	@echo -n $(PROMPT)
 	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
