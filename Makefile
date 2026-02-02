@@ -1,37 +1,40 @@
+.DEFAULT_GOAL := help
+
 LOCAL := /usr/local
 DIR_BIN := $(LOCAL)/bin
 MERCS := mercs
 
 .PHONY: all clean install uninstall run deps build
 
-all:
+all:														## all
 	make dist/$(MERCS)
 
-clean:
+clean:														## clean
 	rm -rf build/
 	rm -rf dist/
 
-
-install:
+install:													## install
 	cp -av dist/$(MERCS) $(DIR_BIN)
 
 
-uninstall:
+uninstall:													## uninstall
 	rm $(DIR_BIN)/$(MERCS)
 
-
-# Builds a standalone installer (quite huge, but works)
-dist/$(MERCS):
+dist/$(MERCS):												## build a standalone installer (quite huge, but works)
 	echo "Building standalone application..."
 	pyinstaller --add-data src/mainwindow.ui:. --onefile src/mercs.py
 
-
-# Here to provide info on how to run the GUI:
-run:
+run:														## info on how to run the GUI:
 	cd src && ./$(MERCS).py
 
+deps: 														## install dependencies
+	python -m pip install -r requirements/requirements.txt
 
-# Install dependencies
-deps:
-	pip install cffi pyqt5
+dev-deps:													## install dev dependencies
+	python -m pip install -r requirements/local.txt
 
+test:														## run pytest
+	python -m pytest
+
+help:                                                       ## print this help message
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

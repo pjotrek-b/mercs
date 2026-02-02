@@ -1,0 +1,4 @@
+# production requirements
+
+cffi
+pyqt5
