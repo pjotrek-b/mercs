@@ -52,6 +52,15 @@ json_on_copy:
 	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j -q -w $(TARGET)/%:1d%f.%e.json "{}"' \;
 
 
+# Use this to de-embed metadata provided by MediaInfo:
+# The current layout is rough "json as-is", but can be refined later.
+mediainfo_on_source:
+	@echo "Copying MEDIAINFO metadata from '$(SOURCE)' to '$(TARGET)' as JSON..."
+	@echo -n $(PROMPT)
+	# UNTESTED:!!!
+	find $(SOURCE)/ -type f -exec sh -c 'mediainfo --Output=JSON "$0" | $(J2X) -t "$0" -p "$(PREFIX)" -j -' {} \;
+
+
 install:
 	# TODO: use make's `install` routines to copy stuff?
 	@echo "This will install $(J2X) in $(LOCAL_BIN)."
@@ -61,7 +70,7 @@ install:
 
 # Will perform the required steps in the right order to create AHAlodeck-type
 # "thincopy" of $(SOURCE) data into $(TARGET).
-create_aha:
+aha_create:
 	time make SOURCE=$(SOURCE) TARGET=$(TARGET) thincopy
 	time sudo make SOURCE=$(SOURCE) TARGET=$(TARGET) xattrs_on_copy
 
