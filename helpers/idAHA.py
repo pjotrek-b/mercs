@@ -9,110 +9,134 @@ import random
 import string
 import argparse
 
-def get_creation_timestamp(file_path):
-    """
-    Get the creation timestamp of a file using st_birthtime.
-    This function is designed for ZFS on Linux.
-    """
-    stat = os.stat(file_path)
-    try:
-        return stat.st_birthtime
-    except AttributeError:
-        # Fallback to modification time if st_birthtime is not available
-        return stat.st_mtime
+class CFIDGenerator:
 
-def generate_random_string(max_chars, charset):
-    """
-    Generate a random string of a specified length and character set.
+    STAR = "⭐️"
+    HEART = "❤️"
 
-    :param max_chars: Maximum number of characters in the random string
-    :param charset: Character set to use for the random string
-    :return: Generated random string
-    """
-    return ''.join(random.choices(charset, k=max_chars))
+    def __init__(self, args):
+        self.file_path = args.file_path
+        self.precision = args.t
+        self.context_length = args.c
+        self.random_length = args.r
+        self.max_total_length = args.m
+        self.charset = args.s
+        self.replace_whitespace = args.w
+        self.format_json = args.j
 
-def format_timestamp(timestamp, precision):
-    """
-    Format the timestamp based on the specified precision.
 
-    :param timestamp: The timestamp to format
-    :param precision: The precision level (1=year, 2=year+month, 3=year+month+day, etc.)
-    :return: Formatted timestamp string
-    """
-    if precision == 1:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y')
-    elif precision == 2:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m')
-    elif precision == 3:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%d')
-    elif precision == 4:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H')
-    elif precision == 5:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M')
-    elif precision == 6:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
-    else:
-        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
+    def get_creation_timestamp(self, file_path):
+        """
+        Get the creation timestamp of a file using st_birthtime.
+        This function is designed for ZFS on Linux.
+        """
+        stat = os.stat(file_path)
+        try:
+            return stat.st_birthtime
+        except AttributeError:
+            # Fallback to modification time if st_birthtime is not available
+            return stat.st_mtime
 
-def trim_string(s, max_length):
-    """
-    Trim a string to a maximum length.
+    def generate_random_string(self, max_chars, charset):
+        """
+        Generate a random string of a specified length and character set.
 
-    :param s: The string to trim
-    :param max_length: The maximum length of the string
-    :return: Trimmed string
-    """
-    return s[:max_length]
+        :param max_chars: Maximum number of characters in the random string
+        :param charset: Character set to use for the random string
+        :return: Generated random string
+        """
+        return ''.join(random.choices(charset, k=max_chars))
 
-def mkCFID(file_path, precision, context_length, random_length, max_total_length, charset, replace_whitespace):
-    """
-    Generate an ID for a given file based on its creation timestamp, context, and optional random string.
+    def format_timestamp(self, timestamp, precision):
+        """
+        Format the timestamp based on the specified precision.
 
-    :param file_path: Path to the file
-    :param precision: Precision level for the timestamp
-    :param context_length: Maximum length of the context
-    :param random_length: Length of the random string
-    :param max_total_length: Maximum total length of the ID
-    :param charset: Character set to use for the random string
-    :return: Generated ID in the format ⭐️$TIMESTAMP-$CONTEXT-$RANDOM❤️
-    """
-    # Get the creation timestamp
-    timestamp = get_creation_timestamp(file_path)
-    timestamp_str = format_timestamp(timestamp, precision)
+        :param timestamp: The timestamp to format
+        :param precision: The precision level (1=year, 2=year+month, 3=year+month+day, etc.)
+        :return: Formatted timestamp string
+        """
+        if precision == 1:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y')
+        elif precision == 2:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m')
+        elif precision == 3:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%d')
+        elif precision == 4:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H')
+        elif precision == 5:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M')
+        elif precision == 6:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
+        else:
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
 
-    # Get the context (parent folder and filename)
-    context = os.path.relpath(file_path, start=os.path.dirname(file_path))
-    context = trim_string(context, context_length)
-    if replace_whitespace:
-        context = context.replace(' ', '_')
+    def trim_string(self, s, max_length):
+        """
+        Trim a string to a maximum length.
 
-    # Generate the random string if random_length is greater than 0
-    random_str = generate_random_string(random_length, charset) if random_length > 0 else ""
+        :param s: The string to trim
+        :param max_length: The maximum length of the string
+        :return: Trimmed string
+        """
+        return s[:max_length]
 
-    # Initial ID construction
-    cfid_parts = [f"⭐️{timestamp_str}"]
-    if context:
-        cfid_parts.append(context)
-    if random_str:
-        cfid_parts.append(random_str)
-    cfid = "-".join(cfid_parts) + "❤️"
+    def mkCFID(self):
+        """
+        Generate an ID for a given file based on its creation timestamp, context, and optional random string.
 
-    # Trim the ID to fit within the maximum total length
-    while len(cfid) > max_total_length:
-        if len(timestamp_str) > 0:
-            timestamp_str = trim_string(timestamp_str, len(timestamp_str) - 1)
-        elif context and len(context) > 0:
-            context = trim_string(context, len(context) - 1)
-        elif random_str and len(random_str) > 0:
-            random_str = trim_string(random_str, len(random_str) - 1)
-        cfid_parts = [f"⭐️{timestamp_str}"]
+        :param file_path: Path to the file
+        :param precision: Precision level for the timestamp
+        :param context_length: Maximum length of the context
+        :param random_length: Length of the random string
+        :param max_total_length: Maximum total length of the ID
+        :param charset: Character set to use for the random string
+        :return: Generated ID in the format ⭐️$TIMESTAMP-$CONTEXT-$RANDOM❤️
+        """
+
+        file_path = self.file_path
+        precision = self.precision
+        context_length = self.context_length
+        random_length = self.random_length
+        max_total_length = self.max_total_length
+        charset = self.charset
+
+        # Get the creation timestamp
+        timestamp = self.get_creation_timestamp(file_path)
+        timestamp_str = self.format_timestamp(timestamp, precision)
+
+        # Get the context (parent folder and filename)
+        context = os.path.relpath(file_path, start=os.path.dirname(file_path))
+        context = self.trim_string(context, context_length)
+        if self.replace_whitespace:
+            context = context.replace(' ', '_')
+
+        # Generate the random string if random_length is greater than 0
+        random_str = self.generate_random_string(random_length, charset) if random_length > 0 else ""
+
+        # Initial ID construction
+        cfid_parts = [f"{self.STAR}{timestamp_str}"]
         if context:
             cfid_parts.append(context)
         if random_str:
             cfid_parts.append(random_str)
-        cfid = "-".join(cfid_parts) + "❤️"
+        cfid = "-".join(cfid_parts) + self.HEART
 
-    return cfid
+        # Trim the ID to fit within the maximum total length
+        while len(cfid) > max_total_length:
+            if len(timestamp_str) > 0:
+                timestamp_str = self.trim_string(timestamp_str, len(timestamp_str) - 1)
+            elif context and len(context) > 0:
+                context = self.trim_string(context, len(context) - 1)
+            elif random_str and len(random_str) > 0:
+                random_str = self.trim_string(random_str, len(random_str) - 1)
+            cfid_parts = [f"{self.STAR}{timestamp_str}"]
+            if context:
+                cfid_parts.append(context)
+            if random_str:
+                cfid_parts.append(random_str)
+            cfid = "-".join(cfid_parts) + self.HEART
+
+        return cfid
 
 def main():
     parser = argparse.ArgumentParser(
@@ -131,7 +155,8 @@ def main():
 
     args = parser.parse_args()
 
-    cfid = mkCFID(args.file_path, args.t, args.c, args.r, args.m, args.s, args.w)
+    cfid_gen = CFIDGenerator(args)
+    cfid = cfid_gen.mkCFID()
 
     if args.j:
         print(f'{{"aha.id":"{cfid}"}}')
