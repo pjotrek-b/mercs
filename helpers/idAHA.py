@@ -161,7 +161,7 @@ def main():
     if args.j:
         print(f'{{"aha.id":"{cfid}"}}')
     else:
-        print(f"Generated ID: {cfid}")
+        print(f"{cfid}")
 
 
 if __name__ == "__main__":
