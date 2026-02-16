@@ -40,7 +40,7 @@ def parse_args():
             )
     parser.add_argument('-j', '--json',
             type=str,
-            required=True,
+            required=False,
             default='-',
             help='A filename containing JSON data to write as xattrs, or - to read JSON data from standard input.'
             )
@@ -73,6 +73,11 @@ def parse_args():
             default=False,
             action='store_true',
             help='By default, empty values will NOT be written to target. Use this to write empty values.'
+            )
+    parser.add_argument("-sz", "--size",
+            default=False,
+            action="store_true",
+            help="Output total bytes used for xattrs in a given target file",
             )
 
     return parser
@@ -290,6 +295,18 @@ def show_xattr_limits():
     print("Max. size of an extended attribute: {}".format(convert_bytes(os.XATTR_SIZE_MAX)))
 
 
+def get_xattrs_size(target: str):
+    """Get the number of bytes used by the xattrs for a given target
+    file.
+    """
+    xattrs = read_xattrs(target)
+    values = []
+    for xattr in xattrs:
+        values.append(os.getxattr(target, xattr).decode())
+    total_bytes = len("".join(xattrs + values))
+    return total_bytes
+
+
 # --- Main function:
 
 def main():
@@ -304,6 +321,11 @@ def main():
     # Shortcut variables for popular options:
     prefix = args.prefix
     target = args.target
+
+    if args.size:
+        print(f"xattrs disk usage: {get_xattrs_size(target)} bytes")
+        show_xattr_limits()
+        sys.exit()
 
     if args.json == '-':
         json_data = read_json_stdin()
