@@ -15,10 +15,14 @@ VERBOSE=0   # Guess...? ;)
 DELAY=0     # sleep $DELAY seconds before continuing (DEBUG)
 DEBUG=0     # Set to 0 for production.
 
+NEEDLE="XBloome Cosmic Boy"
+
 # Required external applications:
 EXIFTOOL="exiftool"
 J2X="j2x -q"    # quiet = faster, -vvv for debugging and peeking :)
 IDAHA="idaha"
+XINDEX="xindex"
+XLOCATE="xlocate"
 
 ACTION="$1"
 SOURCE="$2"     # Source folder to copy.
@@ -62,7 +66,7 @@ case $ACTION in
         echo "Creating thincopy of $SOURCE to $TARGET'"
         pause
 
-        # FIXME: known issue = if this is (re-)run on an existing $TARGET folder, 
+        # FIXME: known issue = if this is (re-)run on an existing $TARGET folder,
         run "cp -vn --attributes-only --preserve=all -Lr \"$SOURCE\" \"$TARGET\""
         ;;
 
@@ -112,6 +116,38 @@ case $ACTION in
 
         ;;
 
+    tarit)
+        TAR="$TARGET-aha.tar.bz2"
+        echo "Wrapping up the Holotar: $TAR..."
+
+        DEBUG=0
+        VERBOSE=1
+        run "tar -cjvf $TAR $TARGET"
+        pause
+        ;;
+
+    xindex)
+        echo "Running index on target $TARGET..."
+        sudo $XINDEX -ia -s $TARGET
+
+        echo "Testing xtoolbox..."
+        $XLOCATE xbloome
+        echo ""
+        echo ""
+        echo "that's just a part of the haystack."
+        echo ""
+        sleep $DELAY
+
+        # Test cache DB:
+        echo "...to find lowercase needle '${NEEDLE,,}' in:"
+        $XLOCATE ${NEEDLE,,}
+
+        echo "Showing off:"
+        # It allows to search all-and-any existing metadata key/value string
+        # per file/folder object.
+        $XLOCATE --search-all ${NEEDLE,,} MD5
+        ;;
+
     holotar)
         if [ -d "$TARGET" ]; then
             echo "WARNING: Target dir already exists. Skipping thincopy. Re-run
@@ -125,6 +161,7 @@ case $ACTION in
         $0 attributes "$SOURCE" "$TARGET" "$PREFIX"
 
         # Step 3: TODO: create tar.
+        $0 tarit "$SOURCE" "$TARGET" "$PREFIX"
         ;;
 
     *)
