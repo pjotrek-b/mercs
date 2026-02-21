@@ -2,12 +2,18 @@
 
 .PHONY: thincopy tag_source tag_copy
 
-PREFIX = user.exiftool.
 SOURCE ?= music
 TARGET ?= aha
 
 LOCAL_BIN := /usr/local/bin
 J2X := j2x
+IDAHA := idaha
+EXIFTOOL := exiftool
+
+PREFIX_EXIF = user.exiftool.
+RECIPE_EXIF := "$(EXIFTOOL) -j \"$SOURCE\" | $(J2X) -t \"$TARGET\" -p '$PREFIX' -j -"
+PREFIX_CFID = user.exiftool.
+RECIPE_CFID := "$(IDAHA) -j \"$SOURCE\" | $(J2X) -t \"$TARGET\" -p '$PREFIX' -j -"
 
 # Uncomment this to auto-run all things:
 #YES := 1
@@ -32,7 +38,7 @@ thincopy:
 xattrs_on_source:
 	@echo "De-embedding metadata from '$(SOURCE)' onto ITSELF."
 	@echo -n $(PROMPT)
-	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j "$0" | $(J2X) -t "$0" -p "$(PREFIX)" -j -' {} \;
+	find $(SOURCE)/ -type f -exec sh -c 'exiftool -m -b -j "$0" | $(J2X) -t "$0" -p "$(PREFIX)" -j -' {} \;
 
 
 # Reads embedded tags from $SOURCE and writes them as xattrs on $TARGET.
@@ -49,7 +55,7 @@ xattrs_on_copy:
 json_on_copy:
 	@echo "Copying EXIFTOOL metadata from '$(SOURCE)' to '$(TARGET)' as JSON file..."
 	@echo -n $(PROMPT)
-	find $(SOURCE)/ -type f -exec sh -c 'exiftool -j -q -w $(TARGET)/%:1d%f.%e.json "{}"' \;
+	find $(SOURCE)/ -type f -exec sh -c 'exiftool -m -b -j -q -w $(TARGET)/%:1d%f.%e.json "{}"' \;
 
 
 # Use this to de-embed metadata provided by MediaInfo:
@@ -66,13 +72,14 @@ install:
 	@echo "This will install $(J2X) in $(LOCAL_BIN)."
 	@echo -n $(PROMPT)
 	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
+	cp -av 'idAHA.py' '$(LOCAL_BIN)/idaha'
 
 
 # Will perform the required steps in the right order to create AHAlodeck-type
 # "thincopy" of $(SOURCE) data into $(TARGET).
 aha_create:
 	time make SOURCE=$(SOURCE) TARGET=$(TARGET) thincopy
-	time sudo make SOURCE=$(SOURCE) TARGET=$(TARGET) xattrs_on_copy
+	time make SOURCE=$(SOURCE) TARGET=$(TARGET) xattrs_on_copy
 
 
 # Makes sure there are no leftovers.
