@@ -21,7 +21,7 @@ NEEDLE="XBloome Cosmic Boy"
 EXIFTOOL="exiftool"
 J2X="j2x -q"    # quiet = faster, -vvv for debugging and peeking :)
 IDAHA="idaha"
-XINDEX="xindex"
+XINDEX="xindex --stats --index-all --redis" # Populate Redis by default
 XLOCATE="xlocate"
 
 ACTION="$1"
@@ -39,6 +39,16 @@ function run()
     fi
     if [ $DEBUG -eq 0 ]; then
         eval "$CMD"
+        RESULT=$?
+        if [ $RESULT -ne 0 ]; then
+            echo ""
+            echo "ERROR: command exit value '$RESULT' is NOT ZERO."
+            echo "Something went wrong. please check the logs and output."
+            echo "Good luck! You'll find and fix it."
+            echo "Or have someone to call?"
+            echo ""
+            exit 2
+        fi
     fi
 }
 
@@ -97,21 +107,16 @@ case $ACTION in
                 # fs-objects" - usually "the files" in the current subdir $OBJECT.
             fi
 
-            if [ -f $OBJECT ]; then
-                if [ $VERBOSE -ge 1 ]; then
-                    echo "It's a FILE! ($OBJECT)"
-                fi
-                FILE=$OBJECT    # for readability
-                TARGET_FILE=${FILE/$SOURCE/$TARGET}
+            FILE=$OBJECT    # for readability
+            TARGET_FILE=${FILE/$SOURCE/$TARGET}
 
-                # 2. De-embed existing metadata
-                USE_PREFIX="$PREFIX.exiftool." # keys come from JSON.
-                run "$EXIFTOOL -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
+            # 2. De-embed existing metadata
+            USE_PREFIX="$PREFIX.exiftool." # keys come from JSON.
+            run "$EXIFTOOL -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
 
-                # 3. Generate and assign CFIDs ❤️&⭐️ for each "object"
-                USE_PREFIX="$PREFIX."   # keys come from JSON.
-                run "$IDAHA -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
-            fi
+            # 3. Generate and assign CFIDs ❤️&⭐️ for each "object"
+            USE_PREFIX="$PREFIX."   # keys come from JSON.
+            run "$IDAHA -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
         done
 
         ;;
@@ -128,7 +133,7 @@ case $ACTION in
 
     xindex)
         echo "Running index on target $TARGET..."
-        sudo $XINDEX -ia -s $TARGET
+        sudo $XINDEX $TARGET
 
         echo "Testing xtoolbox..."
         $XLOCATE xbloome
@@ -171,6 +176,8 @@ case $ACTION in
         echo " thincopy"
         echo " attributes"
         echo " holotar"
+        echo " xindex"
+        echo " tarit"
         echo ""
         exit 42
         ;;
