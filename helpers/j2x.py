@@ -3,7 +3,7 @@
 # me to type, as I was using it really frequently :)
 # So I decided to rename it to "j2x" (pronounced "jax2")
 
-# @author: Peter Bubestinger-Steindl (p.bubestinger at ArkThis com)
+# @author: Peter Bubestinger-Steindl (aha at ArkThis com)
 # @date: 2024-11-22
 
 # This program reads JSON input and applies it to a filesystem object as
@@ -115,10 +115,23 @@ def read_json_file(filename):
 def read_json_stdin():
     data = None
     if sys.stdin.isatty():
-        print("No JSON data provided in standard input. Exiting...")
+        print("sys.stdin is a TTY? Strange. Exiting...")
         sys.exit(1)
-    else:
+    elif not sys.stdin:
+        print("Empty, No JSON data provided in standard input. Exiting...")
+        sys.exit(2)
+
+
+    try:
         data = json.load(sys.stdin)
+    except json.JSONDecodeError as e:
+        print("Invalid JSON data provided in standard input. Exiting...")
+        print(sys.stdin)
+        raise e
+        sys.exit(2) # this line should never be reached.
+    else:
+        print("JSON read alright.")
+
     return data
 
 def show_json(json):
@@ -151,7 +164,7 @@ def write_xattrs_list(target, data, prefix=None, archive=True):
         except Exception as e:
             print("ERROR: could not write '{} = {}'.".format(key, value))
             print(e)
-            sleep(1)
+            time.sleep(1)
             raise(e)
             break
 
@@ -293,6 +306,10 @@ def show_xattr_limits():
 # --- Main function:
 
 def main():
+    print("\nWelcome to J2X --- (part of ⭐️-AHAlodeck-❤️)\n")
+    print("Enjoy a nice and human-friendly future.\n")
+    print("Encoding: {} (= 'utf-8'?)\n\n".format(sys.getfilesystemencoding()))
+
     # Get commandline arguments/options:
     parser = parse_args()
     global args
