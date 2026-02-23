@@ -108,10 +108,13 @@ case $ACTION in
 
 
     attributes)
-        echo "Processing source folders from: $SOURCE"
+        COUNT=0
+        echo "Processing source: $SOURCE"
         pause
 
         for OBJECT in $SOURCE/*; do
+            COUNT=$((COUNT + 1))    # Count processed objects.
+
             DIR_BASE=$(basename "$OBJECT")
             if [ $VERBOSE -ge 1 ]; then
                 echo "- 💾️ Object: '$OBJECT' ($DIR_BASE)"
@@ -147,6 +150,8 @@ case $ACTION in
             USE_PREFIX="$PREFIX."   # keys come from JSON.
             run "$IDAHA -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
         done
+
+        echo "  Done $COUNT objects."
         ;;
 
 
