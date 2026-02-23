@@ -11,7 +11,7 @@
 #   Copy those key/value pairs as-is (best effort at the moment) into
 #   filesystem (FS) attributes (xattrs).
 
-VERBOSE=0   # Guess...? ;)
+VERBOSE=1   # Guess...? ;)
 DELAY=0     # sleep $DELAY seconds before continuing (DEBUG)
 DEBUG=0     # Set to 0 for production.
 
@@ -85,9 +85,9 @@ case $ACTION in
         pause
 
         for OBJECT in $SOURCE/*; do
-            DIR_BASE=$(basename $OBJECT)
+            DIR_BASE=$(basename "$OBJECT")
             if [ $VERBOSE -ge 1 ]; then
-                echo "- 💾️ Object: $OBJECT ($DIR_BASE)"
+                echo "- 💾️ Object: '$OBJECT' ($DIR_BASE)"
                 sleep $DELAY
             fi
 
@@ -107,12 +107,14 @@ case $ACTION in
                 # fs-objects" - usually "the files" in the current subdir $OBJECT.
             fi
 
-            FILE=$OBJECT    # for readability
-            TARGET_FILE=${FILE/$SOURCE/$TARGET}
+            if [ -f "$OBJECT" ]; then
+                FILE=$OBJECT    # for readability
+                TARGET_FILE=${FILE/$SOURCE/$TARGET}
 
-            # 2. De-embed existing metadata
-            USE_PREFIX="$PREFIX.exiftool." # keys come from JSON.
-            run "$EXIFTOOL -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
+                # 2. De-embed existing metadata
+                USE_PREFIX="$PREFIX.exiftool." # keys come from JSON.
+                run "$EXIFTOOL -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
+            fi
 
             # 3. Generate and assign CFIDs ❤️&⭐️ for each "object"
             USE_PREFIX="$PREFIX."   # keys come from JSON.
