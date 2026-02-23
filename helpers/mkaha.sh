@@ -39,13 +39,20 @@ BASE=$(dirname "$SOURCE") # Use this as base to replace for target.
 
 function check_prerequisites
 {
-    for TOOL in $REQ_TOOLS; do
+    local TOOLS="$1"
+
+    echo "Checking if the following required tools are present on the system:"
+    echo "$TOOLS"
+
+    for TOOL in $TOOLS; do
+        echo -n "Tool '$TOOL'... "
 		command -v $TOOL >/dev/null 2>&1 || { echo >&2 "ERROR: Tool '$TOOL' required, but not installed."; exit 1; }
+        echo "OK"
     done
 }
 
 
-function run()
+function run
 {
     CMD="$1"
     if [ $VERBOSE -ge 1 ]; then
@@ -277,7 +284,9 @@ case $ACTION in
         echo "     5. test-xindex"
         echo ""
         echo ""
-		$0 check_prerequisites
+		check_prerequisites "$REQ_TOOLS"
+        echo ""
+        echo ""
 
         exit 42
         ;;
