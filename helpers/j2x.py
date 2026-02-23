@@ -113,6 +113,8 @@ def read_json_file(filename):
     return data
 
 def read_json_stdin():
+    global args
+
     data = None
     if sys.stdin.isatty():
         print("sys.stdin is a TTY? Strange. Exiting...")
@@ -120,7 +122,6 @@ def read_json_stdin():
     elif not sys.stdin:
         print("Empty, No JSON data provided in standard input. Exiting...")
         sys.exit(2)
-
 
     try:
         data = json.load(sys.stdin)
@@ -130,7 +131,11 @@ def read_json_stdin():
         raise e
         sys.exit(2) # this line should never be reached.
     else:
-        print("JSON read alright.")
+        if (args.quiet):
+            # print dots to show activity, but keep visual noise low:
+            print('.', end='')
+        if (args.verbose > 2):
+            print("got valid JSON input.")
 
     return data
 
