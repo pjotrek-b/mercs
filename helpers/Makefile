@@ -74,12 +74,12 @@ install:
 	@echo -n $(PROMPT)
 
 	# Make the programs executable
-	chmod +x '$(J2X).py' '$(IDAHA).py' '$(MKAHA).py'
+	chmod +x '$(J2X).py' '$(IDAHA).py' '$(MKAHA).sh'
 
 	# Install them in $(LOCAL_BIN)
-	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
-	cp -av '$(IDAHA).py' '$(LOCAL_BIN)/$(IDAHA)'
-	cp -av '$(MKAHA).sh' '$(LOCAL_BIN)/$(MKAHA)'
+	cp -a '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
+	cp -a '$(IDAHA).py' '$(LOCAL_BIN)/$(IDAHA)'
+	cp -a '$(MKAHA).sh' '$(LOCAL_BIN)/$(MKAHA)'
 
 
 # Will perform the required steps in the right order to create AHAlodeck-type
