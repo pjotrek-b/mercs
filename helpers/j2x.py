@@ -21,7 +21,7 @@ import time
 
 def parse_args():
     parser = argparse.ArgumentParser(
-            description='Write JSON data as xattrs to a file.'
+            description='J2X: Write JSON key/value data as xattrs to a file. (part of ⭐️-AHAlodeck-❤️)'
             )
     parser.add_argument('-v', '--verbose',
             action='count',
@@ -312,11 +312,6 @@ def main():
     args = parser.parse_args()
     handle_args(args)
 
-
-    if (args.verbose > 2):
-        print("\nWelcome to J2X --- (part of ⭐️-AHAlodeck-❤️)\n")
-        print("Enjoy a nice and human-friendly future.\n")
-        print("Encoding: {} (= 'utf-8'?)\n\n".format(sys.getfilesystemencoding()))
 
     if (args.verbose > 2):
         print("parsed args fine.")
