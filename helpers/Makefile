@@ -8,6 +8,7 @@ TARGET ?= aha
 LOCAL_BIN := /usr/local/bin
 J2X := j2x
 IDAHA := idaha
+MKAHA := mkaha
 EXIFTOOL := exiftool
 
 PREFIX_EXIF = user.exiftool.
@@ -69,16 +70,16 @@ mediainfo_on_source:
 
 install:
 	# TODO: use make's `install` routines to copy stuff?
-	@echo "This will install $(J2X) in $(LOCAL_BIN)."
+	@echo "This will install $(J2X), $(IDAHA) and $(MKAHA) in $(LOCAL_BIN)."
 	@echo -n $(PROMPT)
 
 	# Make the programs executable
-	chmod +x '$(J2X).py'
-	chmod +x 'idAHA.py'
+	chmod +x '$(J2X).py' '$(IDAHA).py' '$(MKAHA).py'
 
 	# Install them in $(LOCAL_BIN)
 	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
-	cp -av 'idAHA.py' '$(LOCAL_BIN)/$(IDAHA)'
+	cp -av '$(IDAHA).py' '$(LOCAL_BIN)/$(IDAHA)'
+	cp -av '$(MKAHA).sh' '$(LOCAL_BIN)/$(MKAHA)'
 
 
 # Will perform the required steps in the right order to create AHAlodeck-type
