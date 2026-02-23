@@ -28,8 +28,8 @@ XINDEX="xindex --stats --index-all --redis" # Populate Redis by default
 XLOCATE="xlocate"
 
 ACTION="$1"
-SOURCE="$2"             # Source folder to copy.
-TARGET="$3"             # Output folder to write target-copy into.
+SOURCE="$2"
+TARGET="$3"
 
 PREFIX="${4:-user}"     # xattrs namespace prefix.
 NEEDLE="${2:-findme}"   # String to search
@@ -112,37 +112,48 @@ case $ACTION in
         echo "Processing source: $SOURCE"
         pause
 
-        for OBJECT in "$SOURCE"/*; do
+        while IFS= read -r -d '' OBJECT; do
             COUNT=$((COUNT + 1))    # Count processed objects.
 
             DIR_BASE=$(basename "$OBJECT")
 
+            # This works for both: FILES and FOLDERS Objects
+            TARGET_OBJECT=${OBJECT/"$SOURCE"/"$TARGET"}
+
             if [ $VERBOSE -ge 1 ]; then
                 echo "Object 🍀️ : '$OBJECT' ($DIR_BASE)"
+                #echo "  - SOURCE = '$SOURCE'"
+                #echo "  - TARGET = '$TARGET'"
+                #echo "  - target_OBJECT = '$TARGET_OBJECT'"
+                echo ""
                 sleep $DELAY
             fi
+
+            if [ ! -e "$TARGET_OBJECT" ]; then
+                echo ""
+                printf "\n\nERROR: Target missing ($TARGET_OBJECT)\n"
+                continue
+                echo ""
+            fi
+
 
             if [ -d "$OBJECT" ]; then
                 if [ $VERBOSE -ge 1 ]; then
                     echo "It's a FOLDER! ($OBJECT)"
                 fi
-                SUBDIR=$OBJECT  # for readability
+                SUBDIR="$OBJECT"  # for readability
                 # --- *** RECURSION! *** ---
                 # into the same $ACTION, but in different subdir.
                 # This is to avoid bash's "argument list too long" on large
                 # datasets.
-                SUB_TARGET=${SUBDIR/$SOURCE/$TARGET}
-                $0 $ACTION "$SUBDIR" "$SUB_TARGET"
+                $0 $ACTION "$SUBDIR" "$TARGET_OBJECT"
                 # --- Returning...
                 # From here on back, we're dealing with "rest, non-dir
                 # fs-objects" - usually "the files" in the current subdir $OBJECT.
             fi
 
-            # This works for both: FILES and FOLDERS
-            TARGET_OBJECT=${OBJECT/$SOURCE/$TARGET}
-
             if [ -f "$OBJECT" ]; then
-                FILE=$OBJECT    # for readability
+                FILE="$OBJECT"    # for readability
 
                 # 2. De-embed existing metadata
                 USE_PREFIX="$PREFIX.exiftool." # keys come from JSON.
@@ -155,10 +166,11 @@ case $ACTION in
                 continue
             fi
 
-            # 3. Generate and assign CFIDs ❤️&⭐️ for each "object"
+            # 3. Generate and assign CFIDs (❤️&⭐️) for each "object"
             USE_PREFIX="$PREFIX."   # keys come from JSON.
             run "$IDAHA -j \"$OBJECT\" | $J2X -t \"$TARGET_OBJECT\" -p '$USE_PREFIX' -j -"
-        done
+
+        done < <(find "$SOURCE"/* -maxdepth 0 -print0)
 
         echo "  Done $COUNT objects."
         ;;
