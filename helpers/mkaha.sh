@@ -15,9 +15,12 @@ VERBOSE=1   # Guess...? ;)
 DELAY=0     # sleep $DELAY seconds before continuing (DEBUG)
 DEBUG=0     # Set to 0 for production.
 
-NEEDLE="XBloome Cosmic Boy"
-
 # Required external applications:
+REQ_TOOLS="exiftool j2x idaha xindex xlocate"
+# Required APT packages (Debian):
+DEB_PKGS="libimage-exiftool-perl"
+
+# The actual commands (including args) to use:
 EXIFTOOL="exiftool"
 J2X="j2x -q"    # quiet = faster, -vvv for debugging and peeking :)
 IDAHA="idaha"
@@ -25,11 +28,22 @@ XINDEX="xindex --stats --index-all --redis" # Populate Redis by default
 XLOCATE="xlocate"
 
 ACTION="$1"
-SOURCE="$2"     # Source folder to copy.
-TARGET="$3"    # Output folder to write target-copy into.
-PREFIX="${4:-user}"    # xattrs namespace prefix.
+SOURCE="$2"             # Source folder to copy.
+TARGET="$3"             # Output folder to write target-copy into.
+
+PREFIX="${4:-user}"     # xattrs namespace prefix.
+NEEDLE="${2:-findme}"   # String to search
 
 BASE=$(dirname "$SOURCE") # Use this as base to replace for target.
+
+
+function check_prerequisites
+{
+    for TOOL in $REQ_TOOLS; do
+		command -v $TOOL >/dev/null 2>&1 || { echo >&2 "ERROR: Tool '$TOOL' required, but not installed."; exit 1; }
+    done
+}
+
 
 function run()
 {
@@ -52,14 +66,6 @@ function run()
     fi
 }
 
-if [ $VERBOSE -ge 1 ]; then
-    echo ""
-    echo "Source: $SOURCE"
-    echo "Target: $TARGET"
-    echo "Prefix: $PREFIX"
-    echo ""
-    sleep $DELAY
-fi
 
 function pause
 {
@@ -70,7 +76,27 @@ function pause
     fi
 }
 
+
+if [ $VERBOSE -ge 1 ]; then
+    echo ""
+    echo "Source: $SOURCE"
+    echo "Target: $TARGET"
+    echo "Prefix: $PREFIX"
+    echo ""
+    sleep $DELAY
+fi
+
+
+
+# ==================================================
+
 case $ACTION in
+	init)
+		echo "Installing required packages:"
+		run "apt install $DEB_PKGS"
+		;;
+
+
     thincopy)
         # 1. Create thincopy
         echo "Creating thincopy of $SOURCE to $TARGET'"
@@ -79,6 +105,7 @@ case $ACTION in
         # FIXME: known issue = if this is (re-)run on an existing $TARGET folder,
         run "cp -vn --attributes-only --preserve=all -Lr \"$SOURCE\" \"$TARGET\""
         ;;
+
 
     attributes)
         echo "Processing source folders from: $SOURCE"
@@ -120,8 +147,8 @@ case $ACTION in
             USE_PREFIX="$PREFIX."   # keys come from JSON.
             run "$IDAHA -j \"$FILE\" | $J2X -t \"$TARGET_FILE\" -p '$USE_PREFIX' -j -"
         done
-
         ;;
+
 
     tarit)
         TAR="$TARGET-aha.tar.bz2"
@@ -133,12 +160,19 @@ case $ACTION in
         pause
         ;;
 
+
     xindex)
         echo "Running index on target $TARGET..."
         sudo $XINDEX $TARGET
+        ;;
 
-        echo "Testing xtoolbox..."
-        $XLOCATE xbloome
+
+    test-xindex)
+        echo "Testing xindex (xtoolbox)..."
+
+        # TODO replace this with 1st word from $NEEDLE:
+		FIRST=${NEEDLE%% *}
+        $XLOCATE $FIRST
         echo ""
         echo ""
         echo "that's just a part of the haystack."
@@ -149,11 +183,13 @@ case $ACTION in
         echo "...to find lowercase needle '${NEEDLE,,}' in:"
         $XLOCATE ${NEEDLE,,}
 
+        echo ""
         echo "Showing off:"
         # It allows to search all-and-any existing metadata key/value string
         # per file/folder object.
-        $XLOCATE --search-all ${NEEDLE,,} MD5
+        $XLOCATE --search-all ${NEEDLE,,} hash.md5
         ;;
+
 
     holotar)
         if [ -d "$TARGET" ]; then
@@ -167,20 +203,56 @@ case $ACTION in
         # Step 2: de-embed metadata and assign other attributes:
         $0 attributes "$SOURCE" "$TARGET" "$PREFIX"
 
-        # Step 3: TODO: create tar.
+        # Step 3: create tar containing attributes and all:
         $0 tarit "$SOURCE" "$TARGET" "$PREFIX"
+
+        # Step 4: Initialize xtoolbox index on $TARGET:
+        $0 xindex "$SOURCE" "$TARGET"
+
+        # Step 5: (OPTIONAL) Test and show off finding "needle in haystack":
+        $0 test-xindex "${NEEDLE,,}"
         ;;
 
+
     *)
-        echo "SYNTAX: $0 ACTION source target [prefix]"
         echo ""
-        echo "Actions:"
-        echo " thincopy"
-        echo " attributes"
-        echo " holotar"
-        echo " xindex"
-        echo " tarit"
+        echo "SYNTAX: $0 ACTION SOURCE TARGET [PREFIX|NEEDLE]"
         echo ""
+        echo "PREFIX: Namespace for xattrs to use ($PREFIX)"
+        echo "NEEDLE: Search string to use for testing"
+        echo ""
+        echo ""
+        echo "ACTIONs:"
+        echo ""
+        echo " init:"
+        echo "      Install required packages and prepare things for first run"
+        echo ""
+        echo " thincopy SOURCE TARGET PREFIX:"
+        echo "      Create 0-Byte metadata-only copy of SOURCE into TARGET"
+        echo ""
+        echo " attributes SOURCE TARGET PREFIX:"
+        echo "      De-embed metadata from SOURCE, and assign other info as attributes to TARGET"
+        echo ""
+        echo " tarit SOURCE TARGET:"
+        echo "      Pack TARGET tree into TAR of the same name."
+        echo ""
+        echo " xindex SOURCE TARGET:"
+        echo "      Generate search index for TARGET."
+        echo ""
+        echo " test-xindex NEEDLE:"
+        echo "      Search for NEEDLE to see if xindex is working."
+        echo ""
+        echo " holotar:"
+        echo "    Runs the following steps to create a HoloTAR from SOURCE into TARGET:"
+        echo "     1. thincopy"
+        echo "     2. attributes"
+        echo "     3. tarit"
+        echo "     4. xindex"
+        echo "     5. test-xindex"
+        echo ""
+        echo ""
+		$0 check_prerequisites
+
         exit 42
         ;;
 esac
