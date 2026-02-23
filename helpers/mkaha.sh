@@ -112,7 +112,7 @@ case $ACTION in
         echo "Processing source: $SOURCE"
         pause
 
-        for OBJECT in $SOURCE/*; do
+        for OBJECT in "$SOURCE"/*; do
             COUNT=$((COUNT + 1))    # Count processed objects.
 
             DIR_BASE=$(basename "$OBJECT")
@@ -151,7 +151,7 @@ case $ACTION in
 
             # Whatever it is, but it has to exist to get attributes:
             if [ ! -e "$OBJECT" ]; then
-                echo "Folder empty? Moving on..."
+                echo "Pattern '$OBJECT' empty? Moving on..."
                 continue
             fi
 
