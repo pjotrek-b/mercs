@@ -71,8 +71,14 @@ install:
 	# TODO: use make's `install` routines to copy stuff?
 	@echo "This will install $(J2X) in $(LOCAL_BIN)."
 	@echo -n $(PROMPT)
+
+	# Make the programs executable
+	chmod +x '$(J2X).py'
+	chmod +x 'idAHA.py'
+
+	# Install them in $(LOCAL_BIN)
 	cp -av '$(J2X).py' '$(LOCAL_BIN)/$(J2X)'
-	cp -av 'idAHA.py' '$(LOCAL_BIN)/idaha'
+	cp -av 'idAHA.py' '$(LOCAL_BIN)/$(IDAHA)'
 
 
 # Will perform the required steps in the right order to create AHAlodeck-type
