@@ -306,17 +306,20 @@ def show_xattr_limits():
 # --- Main function:
 
 def main():
-    print("\nWelcome to J2X --- (part of ⭐️-AHAlodeck-❤️)\n")
-    print("Enjoy a nice and human-friendly future.\n")
-    print("Encoding: {} (= 'utf-8'?)\n\n".format(sys.getfilesystemencoding()))
-
     # Get commandline arguments/options:
     parser = parse_args()
     global args
     args = parser.parse_args()
     handle_args(args)
 
-    #print("parsed args.")
+
+    if (args.verbose > 2):
+        print("\nWelcome to J2X --- (part of ⭐️-AHAlodeck-❤️)\n")
+        print("Enjoy a nice and human-friendly future.\n")
+        print("Encoding: {} (= 'utf-8'?)\n\n".format(sys.getfilesystemencoding()))
+
+    if (args.verbose > 2):
+        print("parsed args fine.")
 
     # Shortcut variables for popular options:
     prefix = args.prefix
