@@ -24,7 +24,8 @@ DEB_PKGS="libimage-exiftool-perl"
 EXIFTOOL="exiftool"
 J2X="j2x -q"    # quiet = faster, -vvv for debugging and peeking :)
 IDAHA="idaha"
-XINDEX="xindex --stats --index-all --redis" # Populate Redis by default
+XINDEX="xindex --stats --index-all" # Populate Redis by default
+#XINDEX="xindex --stats --index-all --redis" # Populate Redis by default
 XLOCATE="xlocate"
 
 ACTION="$1"
