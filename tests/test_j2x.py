@@ -76,3 +76,55 @@ def test_write_xtattr(
     res = j2x.read_xattrs(path)
     assert len(res) == len(stored_attrs)
     assert set(res) == set(stored_attrs)
+
+get_size_tests = [
+    (
+        "file1",
+        [KeyValue("k1", "v1")],
+        # Bytes used minux prefix.
+        4,
+    ),
+    (
+        "file2",
+        [
+            KeyValue("k1", "v1"),
+            KeyValue("k2", "v2"),
+        ],
+        # Bytes used minux prefix.
+        8,
+    ),
+    (
+        "file3",
+        [
+            KeyValue("k1", "v1"),
+            KeyValue("k2", "v2"),
+            KeyValue("k3", "v3"),
+            KeyValue("k4", "v4"),
+            KeyValue("k5", "v5"),
+            KeyValue("k6", "v6"),
+        ],
+        # Bytes used minux prefix.
+        24,
+    ),
+]
+
+
+@pytest.mark.parametrize("file_name, input_attrs, total_bytes", get_size_tests)
+def test_get_xattrs_size(
+    tmp_path: pathlib.Path,
+    args: argparse.Namespace,
+    file_name: str,
+    input_attrs: KeyValue,
+    total_bytes: list,
+):
+    """Make sure total bytes can be retrieved accurately."""
+    if not input_attrs:
+        assert False, "test hasn't been configured correctly"
+    path = tmp_path / file_name
+    path.touch()
+    j2x.args = args
+    for attr in input_attrs:
+        j2x.write_xattr(path, attr.key, attr.value, DEFAULT_PREFIX)
+    bytes_used = j2x.get_xattrs_size(path)
+    # Bytes used always includes the prefix, e.g. `user.` (5-bytes).
+    assert bytes_used - (len(input_attrs) * len(DEFAULT_PREFIX)) == total_bytes
