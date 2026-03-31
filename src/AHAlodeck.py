@@ -34,12 +34,19 @@ class AHAlodeck():
     def BinToUnicode(self, metadata):
         text = []
         for key, value in metadata:
-            keyvalue = [
-                    key,
-                    value.decode(self.encoding)
-                    ]
-            text.append(keyvalue)
+            try:
+                keyvalue = [
+                        key,
+                        value.decode(self.encoding)
+                        ]
+            except UnicodeDecodeError as e:
+                print("Non-Unicode binary sequence found: %s" % (key))
+                keyvalue = [
+                        key,
+                        value.hex()
+                        ]
 
+            text.append(keyvalue)
         return text
 
     ##
