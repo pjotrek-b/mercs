@@ -10,7 +10,7 @@ from os import path
 from AHAlodeck import AHAlodeck
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QFileDialog, QTableWidgetItem, QApplication, QFileDialog, QHeaderView
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
 
@@ -155,6 +155,7 @@ class Ui(QtWidgets.QMainWindow):
         table.setColumnWidth(0, self.maxWord['key_limit'] * 7)
         table.setColumnWidth(1, self.maxWord['value_limit'] * 7)
         table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
         return table
 
 
