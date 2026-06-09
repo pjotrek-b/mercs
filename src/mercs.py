@@ -12,6 +12,7 @@ from AHAlodeck import AHAlodeck
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QTableWidgetItem, QFileDialog)
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 
 from pprint import pprint
 
@@ -164,6 +165,7 @@ class Ui(QtWidgets.QMainWindow):
             table.setItem(row, 0, QTableWidgetItem(key))
             table.setItem(row, 1, QTableWidgetItem(value))
             row += 1
+        table.sortItems(0, Qt.AscendingOrder);
 
     ##
     # Inserts a new, empty row for a new metadata entry.
